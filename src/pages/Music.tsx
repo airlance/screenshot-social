@@ -18,7 +18,7 @@ const Music = () => (
       <button className="w-9 h-9 flex items-center justify-center text-muted-foreground hover:text-foreground"><SkipForward className="w-4 h-4 fill-current" /></button>
       <button className="w-9 h-9 flex items-center justify-center text-muted-foreground"><Shuffle className="w-4 h-4" /></button>
       <button className="w-9 h-9 flex items-center justify-center text-muted-foreground"><Repeat className="w-4 h-4" /></button>
-      <div className="w-10 h-10 rounded-md bg-gradient-to-br from-primary to-purple-600 ml-2 shrink-0" />
+      <div className="w-10 h-10 rounded-md ml-2 shrink-0" style={{ background: "var(--gradient-story)" }} />
       <div className="flex-1 min-w-0">
         <div className="text-sm font-semibold truncate">Cheri Cheri Lady</div>
         <div className="text-xs text-muted-foreground truncate">DJ JEDY, Niki Four</div>
