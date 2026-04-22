@@ -2,14 +2,28 @@ import { ReactNode } from "react";
 import { TopBar } from "./TopBar";
 import { Sidebar } from "./Sidebar";
 
-export const AppLayout = ({ children, right }: { children: ReactNode; right?: ReactNode }) => {
+type AppLayoutProps = {
+  children: ReactNode;
+  right?: ReactNode;
+  /** "default" — узкая колонка 600px по центру; "wide" — на всю оставшуюся ширину */
+  variant?: "default" | "wide";
+};
+
+export const AppLayout = ({ children, right, variant = "default" }: AppLayoutProps) => {
+  const isWide = variant === "wide";
   return (
     <div className="min-h-screen bg-background">
       <TopBar />
       <div className="max-w-[1280px] mx-auto px-4 flex gap-4">
         <Sidebar />
         <main className="flex-1 min-w-0 py-3 flex gap-4">
-          <div className="flex-1 min-w-0 max-w-[600px] mx-auto w-full flex flex-col gap-3">
+          <div
+            className={
+              isWide
+                ? "flex-1 min-w-0 w-full flex flex-col gap-3"
+                : "flex-1 min-w-0 max-w-[600px] mx-auto w-full flex flex-col gap-3"
+            }
+          >
             {children}
           </div>
           {right && (
