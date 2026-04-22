@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { TopBar } from "./TopBar";
 import { Sidebar } from "./Sidebar";
+import { PlayerBar } from "@/components/player/PlayerBar";
 
 type AppLayoutProps = {
   children: ReactNode;
@@ -16,21 +17,24 @@ export const AppLayout = ({ children, right, variant = "default" }: AppLayoutPro
       <TopBar />
       <div className="max-w-[1280px] mx-auto px-4 flex gap-4">
         <Sidebar />
-        <main className="flex-1 min-w-0 py-3 flex gap-4">
-          <div
-            className={
-              isWide
-                ? "flex-1 min-w-0 w-full flex flex-col gap-3"
-                : "flex-1 min-w-0 max-w-[600px] mx-auto w-full flex flex-col gap-3"
-            }
-          >
-            {children}
+        <main className="flex-1 min-w-0 py-3 flex flex-col gap-3">
+          <PlayerBar />
+          <div className="flex gap-4">
+            <div
+              className={
+                isWide
+                  ? "flex-1 min-w-0 w-full flex flex-col gap-3"
+                  : "flex-1 min-w-0 max-w-[600px] mx-auto w-full flex flex-col gap-3"
+              }
+            >
+              {children}
+            </div>
+            {right && (
+              <aside className="hidden xl:flex flex-col w-[280px] shrink-0 py-0 gap-3 sticky top-[72px] self-start max-h-[calc(100vh-72px)]">
+                {right}
+              </aside>
+            )}
           </div>
-          {right && (
-            <aside className="hidden xl:flex flex-col w-[280px] shrink-0 py-0 gap-3 sticky top-[72px] self-start max-h-[calc(100vh-72px)]">
-              {right}
-            </aside>
-          )}
         </main>
       </div>
     </div>

@@ -14,12 +14,14 @@ import Market from "./pages/Market.tsx";
 import Messenger from "./pages/Messenger.tsx";
 import SimplePage from "./pages/SimplePage.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import { PlayerProvider } from "./context/PlayerContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+      <PlayerProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
@@ -45,6 +47,7 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
+      </PlayerProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
