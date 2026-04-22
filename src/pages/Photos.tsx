@@ -3,7 +3,7 @@ import { Image as ImageIcon, MoreHorizontal, Settings } from "lucide-react";
 import photo1 from "@/assets/photo-1.jpg";
 
 const Photos = () => (
-  <AppLayout>
+  <AppLayout variant="wide">
     <div className="vk-card p-5">
       <h1 className="text-xl font-bold mb-4">Мои фотографии</h1>
       <div className="flex items-center justify-between mb-6">
