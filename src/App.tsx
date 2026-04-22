@@ -11,6 +11,7 @@ import Music from "./pages/Music.tsx";
 import Photos from "./pages/Photos.tsx";
 import Groups from "./pages/Groups.tsx";
 import Market from "./pages/Market.tsx";
+import Messenger from "./pages/Messenger.tsx";
 import SimplePage from "./pages/SimplePage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -25,7 +26,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/feed" element={<Feed />} />
-          <Route path="/messenger" element={<SimplePage title="Мессенджер" />} />
+          <Route path="/messenger" element={<Messenger />} />
           <Route path="/calls" element={<SimplePage title="Звонки" />} />
           <Route path="/friends" element={<Friends />} />
           <Route path="/groups" element={<Groups />} />
