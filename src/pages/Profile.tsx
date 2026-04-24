@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { CreatePost } from "@/components/feed/CreatePost";
 import {
@@ -219,7 +220,7 @@ const Profile = () => {
           </div>
           <div className="flex items-center gap-2">
             <button className="vk-pill rounded-lg px-5">Редактировать профиль</button>
-            <button className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary hover:bg-accent"><BarChart3 className="h-5 w-5" /></button>
+            <Link to="/analytics" className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary hover:bg-accent" aria-label="Аналитика"><BarChart3 className="h-5 w-5" /></Link>
             <DropdownMenu>
               <DropdownMenuTrigger asChild><button className="vk-pill gap-2 rounded-lg px-4">Ещё <ChevronDown className="h-4 w-4" /></button></DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-64 rounded-xl border-border bg-popover p-2 shadow-elevated">
@@ -232,8 +233,7 @@ const Profile = () => {
         </div>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_344px]">
-        <div className="flex flex-col gap-3">
+      <section className="flex flex-col gap-3">
           <div className="vk-card overflow-hidden rounded-xl p-3">
             <div className="mb-3 flex gap-1 overflow-x-auto scrollbar-none">
               {tabs.map(({ label, icon: Icon, active }) => (
@@ -252,7 +252,6 @@ const Profile = () => {
           </div>
           <CreatePost />
           <div className="vk-card flex justify-center p-8"><Search className="h-6 w-6 text-muted-foreground" /></div>
-        </div>
       </section>
 
       {renderAvatarDialog()}
