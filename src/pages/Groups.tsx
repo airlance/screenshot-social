@@ -19,6 +19,7 @@ import {
   UserPlus,
   Users,
   Video,
+  X,
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
@@ -69,8 +70,31 @@ const fans = [
   { name: "Натали", src: avatar6 },
 ];
 
+const recent = [
+  { name: "SunShow", color: "from-yellow-400 to-orange-500" },
+  { name: "Комбинац...", color: "from-pink-500 to-purple-600" },
+];
+
+const recs = [
+  { name: "ХАННА", category: "Музыкант", verified: true },
+  { name: "Мобильная фотография", category: "Фотография" },
+  { name: "Семья, дети и отношен...", category: "Родители и дети" },
+  { name: "visualgram", category: "Бизнес", verified: true },
+  { name: "Nika.family", category: "Родители и дети", verified: true },
+  { name: "ржпг | комиксы", category: "Художник" },
+  { name: "Академия Леди", category: "Общество", verified: true },
+  { name: "EDISON FAMILY ™", category: "Блогер" },
+];
+
+const forYou = [
+  { name: "Чижик", subs: "2,2М подписчиков", color: "bg-yellow-500" },
+  { name: "Психология и Отн...", subs: "539,5К подписчиков", color: "bg-zinc-700" },
+  { name: "Мудрая книга жиз...", subs: "329,1К подписчиков", color: "bg-rose-200" },
+];
+
 const Groups = () => {
   const [activeTab, setActiveTab] = useState("video");
+  const [selectedCommunity, setSelectedCommunity] = useState(false);
   const featured = useMemo(() => [postMusicCover, avatarMe, postPhoto2], []);
 
   const renderTabContent = () => {
