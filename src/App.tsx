@@ -9,6 +9,7 @@ import Profile from "./pages/Profile.tsx";
 import Friends from "./pages/Friends.tsx";
 import Music from "./pages/Music.tsx";
 import Photos from "./pages/Photos.tsx";
+import Video from "./pages/Video.tsx";
 import Groups from "./pages/Groups.tsx";
 import Market from "./pages/Market.tsx";
 import Messenger from "./pages/Messenger.tsx";
@@ -35,7 +36,7 @@ const App = () => (
           <Route path="/groups" element={<Groups />} />
           <Route path="/photos" element={<Photos />} />
           <Route path="/music" element={<Music />} />
-          <Route path="/video" element={<SimplePage title="Видео" />} />
+          <Route path="/video" element={<Video />} />
           <Route path="/clips" element={<SimplePage title="Клипы" />} />
           <Route path="/games" element={<SimplePage title="Игры" />} />
           <Route path="/stickers" element={<SimplePage title="Стикеры" />} />
