@@ -12,6 +12,7 @@ import Photos from "./pages/Photos.tsx";
 import Groups from "./pages/Groups.tsx";
 import Market from "./pages/Market.tsx";
 import Messenger from "./pages/Messenger.tsx";
+import Analytics from "./pages/Analytics.tsx";
 import SimplePage from "./pages/SimplePage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { PlayerProvider } from "./context/PlayerContext";
@@ -39,6 +40,7 @@ const App = () => (
           <Route path="/games" element={<SimplePage title="Игры" />} />
           <Route path="/stickers" element={<SimplePage title="Стикеры" />} />
           <Route path="/market" element={<Market />} />
+          <Route path="/analytics" element={<Analytics />} />
           <Route path="/services" element={<SimplePage title="Сервисы" />} />
           <Route path="/voices" element={<SimplePage title="Голоса" />} />
           <Route path="/bookmarks" element={<SimplePage title="Закладки" />} />
