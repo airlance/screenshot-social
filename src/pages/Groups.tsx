@@ -182,6 +182,84 @@ const Groups = () => {
     );
   };
 
+  if (!selectedCommunity) {
+    return (
+      <AppLayout
+        right={
+          <>
+            <button className="vk-pill w-full !bg-secondary !py-3">Создать сообщество</button>
+            <div className="vk-card p-2">
+              <button className="w-full rounded-lg bg-secondary px-3 py-2 text-left text-sm">Главная</button>
+              <button className="mt-1 flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-secondary/60">
+                Мероприятия <Calendar className="h-4 w-4" />
+              </button>
+            </div>
+          </>
+        }
+      >
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input className="h-12 w-full rounded-2xl bg-card pl-11 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none" placeholder="Поиск сообществ" />
+        </div>
+
+        <div className="vk-card p-4">
+          <div className="mb-4 flex items-center justify-between">
+            <span className="font-semibold">Недавно посещали</span>
+            <button className="text-muted-foreground"><X className="h-4 w-4" /></button>
+          </div>
+          <div className="flex gap-4">
+            {recent.map((r) => (
+              <button key={r.name} onClick={() => r.name === "SunShow" && setSelectedCommunity(true)} className="flex flex-col items-center gap-2">
+                <div className={`h-14 w-14 rounded-full bg-gradient-to-br ${r.color}`} />
+                <span className="text-xs">{r.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="vk-card p-4">
+          <div className="mb-4 flex items-baseline gap-2">
+            <span className="font-semibold">Рекомендации</span>
+            <span className="text-sm text-muted-foreground">163</span>
+          </div>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+            {recs.map((r) => (
+              <button key={r.name} onClick={() => r.name === "ХАННА" && setSelectedCommunity(true)} className="flex min-w-0 items-center gap-3 text-left">
+                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-secondary">
+                  {r.name === "ХАННА" && <img src={postMusicCover} alt="ХАННА" className="h-full w-full object-cover" />}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1 truncate text-sm font-medium">
+                    {r.name} {r.verified && <BadgeCheck className="h-3.5 w-3.5 shrink-0 fill-primary text-background" />}
+                  </div>
+                  <div className="truncate text-xs text-muted-foreground">{r.category}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+          <button className="mt-4 w-full text-center text-sm text-primary hover:underline">Показать все ›</button>
+        </div>
+
+        <div className="vk-card p-4">
+          <div className="mb-4 flex items-center justify-between">
+            <span className="font-semibold">Для вас</span>
+            <button className="text-sm text-primary hover:underline">Показать все</button>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {forYou.map((f) => (
+              <div key={f.name} className={`relative aspect-square overflow-hidden rounded-2xl ${f.color}`}>
+                <div className="absolute bottom-2 left-2 right-2">
+                  <span className="rounded bg-background/60 px-1.5 py-0.5 text-[10px] font-semibold backdrop-blur">{f.subs}</span>
+                  <div className="mt-1 text-sm font-semibold text-foreground drop-shadow">{f.name}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout variant="wide" right={<RightCommunityPanel fans={fans} />}>
       <section className="vk-card overflow-hidden rounded-xl">
