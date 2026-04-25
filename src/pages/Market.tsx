@@ -3,7 +3,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import {
   Search, Menu, ShoppingCart, MapPin, Shirt, Home, Sparkles, Baby, Monitor,
   Dumbbell, Wrench, Palette, Car, Bookmark, ChevronRight, Share2, Eye, Star,
-  MessageSquare, Plus, Minus, Trash2, X, Smile, Image as ImageIcon, Music as MusicIcon,
+  MessageSquare, Plus, Minus, Trash2, Smile, Image as ImageIcon, Music as MusicIcon,
   Gift, Video as VideoIcon, ChevronDown,
 } from "lucide-react";
 import {
