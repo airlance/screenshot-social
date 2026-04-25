@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
 import { TopBar } from "./TopBar";
 import { Sidebar } from "./Sidebar";
-import { PlayerBar } from "@/components/player/PlayerBar";
 
 type AppLayoutProps = {
   children: ReactNode;
@@ -18,7 +17,6 @@ export const AppLayout = ({ children, right, variant = "default" }: AppLayoutPro
       <div className="max-w-[1280px] mx-auto px-4 flex gap-4">
         <Sidebar />
         <main className="flex-1 min-w-0 py-3 flex flex-col gap-3">
-          <PlayerBar />
           <div className="flex gap-4">
             <div
               className={
