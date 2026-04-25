@@ -225,10 +225,137 @@ const Section = ({ title, packs, onOpen }: { title: string; packs: StickerPack[]
   </section>
 );
 
+// ---- Pack Preview Modal ----
+const PackPreviewModal = ({
+  pack,
+  open,
+  onClose,
+}: {
+  pack: StickerPack | null;
+  open: boolean;
+  onClose: () => void;
+}) => {
+  const { toast } = useToast();
+  const [selectedSticker, setSelectedSticker] = useState<number | null>(null);
+  const [selectedChat, setSelectedChat] = useState<string | null>(null);
+
+  if (!pack) return null;
+
+  const handleSend = () => {
+    if (selectedSticker === null) {
+      toast({ title: "Выберите стикер", description: "Нажмите на любой стикер из набора" });
+      return;
+    }
+    if (!selectedChat) {
+      toast({ title: "Выберите диалог", description: "Кому отправить стикер?" });
+      return;
+    }
+    const chat = MOCK_CHATS.find((c) => c.id === selectedChat);
+    toast({
+      title: "Стикер отправлен",
+      description: `${PACK_STICKERS[selectedSticker]} → ${chat?.name}`,
+    });
+    setSelectedSticker(null);
+    setSelectedChat(null);
+    onClose();
+  };
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) {
+          setSelectedSticker(null);
+          setSelectedChat(null);
+          onClose();
+        }
+      }}
+    >
+      <DialogContent className="max-w-2xl p-0 overflow-hidden">
+        <div className={cn("relative h-32 bg-gradient-to-br", pack.cover)}>
+          <div className="absolute inset-0 grid place-items-center text-7xl">{pack.emoji}</div>
+          {pack.discount && (
+            <span className="absolute top-3 left-3 rounded-md bg-rose-500 text-white text-xs font-bold px-2 py-1">
+              {pack.discount}
+            </span>
+          )}
+        </div>
+
+        <div className="px-6 pt-4">
+          <DialogHeader>
+            <DialogTitle className="text-xl">{pack.title}</DialogTitle>
+            <DialogDescription>
+              {pack.author ? `Автор: ${pack.author}` : "Набор стикеров"}
+              {" · "}
+              {pack.oldPrice && <span className="line-through mr-1 text-muted-foreground">{pack.oldPrice}</span>}
+              <span className="text-foreground font-medium">{pack.price}</span>
+            </DialogDescription>
+          </DialogHeader>
+        </div>
+
+        <div className="px-6 mt-4">
+          <div className="text-sm font-semibold mb-2">Выберите стикер</div>
+          <div className="grid grid-cols-8 gap-2 p-3 rounded-xl bg-secondary/50 max-h-[220px] overflow-y-auto">
+            {PACK_STICKERS.map((s, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setSelectedSticker(i)}
+                className={cn(
+                  "aspect-square rounded-lg grid place-items-center text-3xl transition-all hover:bg-background",
+                  selectedSticker === i ? "bg-primary/15 ring-2 ring-primary scale-105" : "",
+                )}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="px-6 mt-4">
+          <div className="text-sm font-semibold mb-2">Отправить в диалог</div>
+          <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
+            {MOCK_CHATS.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => setSelectedChat(c.id)}
+                className={cn(
+                  "shrink-0 flex flex-col items-center gap-1 w-16",
+                  selectedChat === c.id ? "" : "opacity-80 hover:opacity-100",
+                )}
+              >
+                <span
+                  className={cn(
+                    "h-12 w-12 rounded-full grid place-items-center text-xl bg-gradient-to-br from-secondary to-accent transition-all",
+                    selectedChat === c.id ? "ring-2 ring-primary scale-105" : "",
+                  )}
+                >
+                  {c.emoji}
+                </span>
+                <span className="text-[11px] truncate w-full text-center">{c.name.split(" ")[0]}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <DialogFooter className="px-6 pb-6 pt-2 sm:justify-between gap-2">
+          <Button variant="ghost" onClick={onClose}>Отмена</Button>
+          <Button onClick={handleSend} className="gap-2">
+            <Send className="h-4 w-4" />
+            Отправить
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 // ---- Page ----
 const Stickers = () => {
   const [tab, setTab] = useState<Tab>("Для вас");
   const [query, setQuery] = useState("");
+  const [previewPack, setPreviewPack] = useState<StickerPack | null>(null);
 
   const showAnimated = tab === "Анимированные";
   const showLove = tab === "Влюблённым";
@@ -239,6 +366,8 @@ const Stickers = () => {
     const all = [...SECTIONS.flatMap((s) => s.packs), ...ANIMATED_PACKS];
     return all.filter((p) => p.title.toLowerCase().includes(q));
   }, [query]);
+
+  const openPack = (p: StickerPack) => setPreviewPack(p);
 
   return (
     <AppLayout variant="wide">
@@ -306,12 +435,12 @@ const Stickers = () => {
         <section className="mt-4">
           <h2 className="text-lg font-bold mb-3">Результаты: {filtered.length}</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-3">
-            {filtered.map((p) => <SmallCard key={p.id} pack={p} />)}
+            {filtered.map((p) => <SmallCard key={p.id} pack={p} onOpen={openPack} />)}
           </div>
         </section>
       ) : showAnimated ? (
         <section className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-5">
-          {ANIMATED_PACKS.map((p) => <LargeCard key={p.id} pack={p} />)}
+          {ANIMATED_PACKS.map((p) => <LargeCard key={p.id} pack={p} onOpen={openPack} />)}
         </section>
       ) : showLove ? (
         <>
@@ -319,20 +448,20 @@ const Stickers = () => {
             {[
               { id: "l1", title: "Про любофф", author: "Анастасия Юхновец", cover: "from-zinc-700 to-zinc-900", emoji: "💖", price: "100 голосов", large: true },
               { id: "l2", title: "Любимое лето", author: "Елена Савченко", cover: "from-amber-200 to-orange-300", emoji: "🦊", price: "1 голос", oldPrice: "10", discount: "90%", large: true },
-            ].map((p) => <LargeCard key={p.id} pack={p as StickerPack} />)}
+            ].map((p) => <LargeCard key={p.id} pack={p as StickerPack} onOpen={openPack} />)}
           </section>
-          <Section title="Новые" packs={makePacks("Влюблённые", 7)} />
+          <Section title="Новые" packs={makePacks("Влюблённые", 7)} onOpen={openPack} />
           <section className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-5">
             {[
               { id: "lo1", title: "Тёплые Обнимышки", author: "Анастасия Волк", cover: "from-amber-100 to-orange-200", emoji: "🐹", price: "1 голос", oldPrice: "10", discount: "90%", large: true },
               { id: "lo2", title: "Дьявол и Дьяволица", author: "Ник Толабов", cover: "from-rose-500 to-red-600", emoji: "💃", price: "1 голос", oldPrice: "10", discount: "90%", large: true },
               { id: "lo3", title: "Обнимышки", author: "Анастасия Волк", cover: "from-pink-200 to-rose-300", emoji: "🐭", price: "1 голос", oldPrice: "10", discount: "90%", large: true },
               { id: "lo4", title: "Когда просто любишь", author: "Елена Савченко", cover: "from-rose-100 to-pink-200", emoji: "🐶", price: "1 голос", oldPrice: "10", discount: "90%", large: true },
-            ].map((p) => <LargeCard key={p.id} pack={p as StickerPack} />)}
+            ].map((p) => <LargeCard key={p.id} pack={p as StickerPack} onOpen={openPack} />)}
           </section>
         </>
       ) : tab === "Бесплатные" ? (
-        <Section title="Бесплатные наборы" packs={makePacks("Бесплатный", 14, { price: "Бесплатно", oldPrice: undefined, discount: undefined })} />
+        <Section title="Бесплатные наборы" packs={makePacks("Бесплатный", 14, { price: "Бесплатно", oldPrice: undefined, discount: undefined })} onOpen={openPack} />
       ) : tab === "Мои" ? (
         <section className="mt-4">
           <div className="vk-card p-8 text-center">
@@ -343,8 +472,10 @@ const Stickers = () => {
           </div>
         </section>
       ) : (
-        SECTIONS.map((s) => <Section key={s.title} title={s.title} packs={s.packs} />)
+        SECTIONS.map((s) => <Section key={s.title} title={s.title} packs={s.packs} onOpen={openPack} />)
       )}
+
+      <PackPreviewModal pack={previewPack} open={!!previewPack} onClose={() => setPreviewPack(null)} />
     </AppLayout>
   );
 };
