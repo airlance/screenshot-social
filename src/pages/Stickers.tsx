@@ -155,9 +155,11 @@ const SmallCover = ({ pack }: { pack: StickerPack }) => (
   </div>
 );
 
-const SmallCard = ({ pack }: { pack: StickerPack }) => (
-  <div className="min-w-0">
-    <SmallCover pack={pack} />
+const SmallCard = ({ pack, onOpen }: { pack: StickerPack; onOpen?: (p: StickerPack) => void }) => (
+  <button type="button" onClick={() => onOpen?.(pack)} className="min-w-0 text-left group">
+    <div className="transition-transform group-hover:scale-[1.02]">
+      <SmallCover pack={pack} />
+    </div>
     <div className="mt-2 text-sm">
       {pack.price === "Бесплатно" ? (
         <span className="text-emerald-500 font-medium">Бесплатно</span>
@@ -168,12 +170,16 @@ const SmallCard = ({ pack }: { pack: StickerPack }) => (
         </span>
       )}
     </div>
-  </div>
+  </button>
 );
 
-const LargeCard = ({ pack }: { pack: StickerPack }) => (
+const LargeCard = ({ pack, onOpen }: { pack: StickerPack; onOpen?: (p: StickerPack) => void }) => (
   <div className="flex gap-3">
-    <div className={cn("relative aspect-[5/3] w-[55%] rounded-2xl overflow-hidden bg-gradient-to-br shrink-0", pack.cover)}>
+    <button
+      type="button"
+      onClick={() => onOpen?.(pack)}
+      className={cn("relative aspect-[5/3] w-[55%] rounded-2xl overflow-hidden bg-gradient-to-br shrink-0 transition-transform hover:scale-[1.01]", pack.cover)}
+    >
       <div className="absolute inset-0 grid place-items-center text-6xl">{pack.emoji}</div>
       {pack.discount && (
         <span className="absolute top-2 left-2 rounded-md bg-rose-500 text-white text-xs font-bold px-1.5 py-0.5">
@@ -190,14 +196,14 @@ const LargeCard = ({ pack }: { pack: StickerPack }) => (
           <Play className="h-4 w-4 fill-current" />
         </span>
       )}
-    </div>
+    </button>
     <div className="flex-1 min-w-0 flex flex-col justify-center gap-2">
-      <div className="min-w-0">
-        <h3 className="text-base font-semibold truncate">{pack.title}</h3>
+      <button type="button" onClick={() => onOpen?.(pack)} className="min-w-0 text-left">
+        <h3 className="text-base font-semibold truncate hover:text-primary">{pack.title}</h3>
         {pack.author && <div className="text-sm text-muted-foreground truncate">{pack.author}</div>}
-      </div>
+      </button>
       {pack.price === "Подробнее" ? (
-        <Button variant="secondary" className="self-start h-9 rounded-lg">Подробнее</Button>
+        <Button variant="secondary" className="self-start h-9 rounded-lg" onClick={() => onOpen?.(pack)}>Подробнее</Button>
       ) : (
         <PriceButton pack={pack} />
       )}
@@ -205,7 +211,7 @@ const LargeCard = ({ pack }: { pack: StickerPack }) => (
   </div>
 );
 
-const Section = ({ title, packs }: { title: string; packs: StickerPack[] }) => (
+const Section = ({ title, packs, onOpen }: { title: string; packs: StickerPack[]; onOpen?: (p: StickerPack) => void }) => (
   <section className="mt-6">
     <div className="flex items-center justify-between mb-3">
       <h2 className="text-lg font-bold">{title}</h2>
@@ -213,7 +219,7 @@ const Section = ({ title, packs }: { title: string; packs: StickerPack[] }) => (
     </div>
     <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-3">
       {packs.map((p) => (
-        <SmallCard key={p.id} pack={p} />
+        <SmallCard key={p.id} pack={p} onOpen={onOpen} />
       ))}
     </div>
   </section>
