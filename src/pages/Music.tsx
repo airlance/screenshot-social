@@ -1,6 +1,8 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Play, Search, Download, ListMusic, Upload } from "lucide-react";
 import { usePlayer } from "@/context/PlayerContext";
+import { PlayerBar } from "@/components/player/PlayerBar";
+import { useEffect } from "react";
 
 const playlists = [
   { title: "Для вас", subtitle: "обновлён сегодня", gradient: "var(--gradient-music-1)" },
@@ -12,9 +14,21 @@ const playlists = [
 const tabs = ["Главная", "Моя музыка", "Обзор", "Радио", "Обновления"];
 
 const Music = () => {
-  const { play } = usePlayer();
+  const { play, isActive } = usePlayer();
+
+  // На странице «Музыка» плеер должен быть всегда видимым
+  useEffect(() => {
+    if (!isActive) {
+      play();
+    }
+  }, [isActive, play]);
+
   return (
     <AppLayout variant="wide">
+      <div className="sticky top-[60px] z-30 bg-background pb-3 -mt-3 pt-3">
+        <PlayerBar />
+      </div>
+
       <div className="vk-card p-4">
         <div className="flex items-center gap-1 mb-4">
           {tabs.map((t, i) => (
