@@ -3,14 +3,42 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import {
   Search,
   Settings,
   Gift,
   Play,
   Repeat,
   ChevronRight,
+  Send,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+// Mock chats for "Send to dialog" picker
+const MOCK_CHATS = [
+  { id: "family", name: "❤️ Family chat", emoji: "👨‍👩‍👧" },
+  { id: "leah", name: "Leah Collins", emoji: "🧑" },
+  { id: "curry", name: "Curry Club", emoji: "🟡" },
+  { id: "mamie", name: "Mamie Cruz", emoji: "👩" },
+  { id: "evan", name: "Evan West", emoji: "🧔" },
+  { id: "nannie", name: "Nannie Watts", emoji: "👵" },
+  { id: "vicente", name: "Vicente de la Cruz", emoji: "🧑‍🎨" },
+  { id: "kari", name: "Kari Granleese", emoji: "🧑‍💼" },
+];
+
+// Per-pack sticker grid emojis (16 stickers per set)
+const PACK_STICKERS = [
+  "😀", "😂", "😍", "😎", "🤩", "🥳", "😭", "😡",
+  "🤔", "😴", "🤗", "🙃", "😇", "🤯", "🥰", "🤪",
+];
 
 // ---- Types ----
 type StickerPack = {
