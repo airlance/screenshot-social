@@ -16,6 +16,7 @@ import Messenger from "./pages/Messenger.tsx";
 import Analytics from "./pages/Analytics.tsx";
 import Stickers from "./pages/Stickers.tsx";
 import Clips from "./pages/Clips.tsx";
+import Games from "./pages/Games.tsx";
 import SimplePage from "./pages/SimplePage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { PlayerProvider } from "./context/PlayerContext";
@@ -40,7 +41,7 @@ const App = () => (
           <Route path="/music" element={<Music />} />
           <Route path="/video" element={<Video />} />
           <Route path="/clips" element={<Clips />} />
-          <Route path="/games" element={<SimplePage title="Игры" />} />
+          <Route path="/games" element={<Games />} />
           <Route path="/stickers" element={<Stickers />} />
           <Route path="/market" element={<Market />} />
           <Route path="/analytics" element={<Analytics />} />
