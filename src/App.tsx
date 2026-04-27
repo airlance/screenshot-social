@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import Feed from "./pages/Feed.tsx";
 import Profile from "./pages/Profile.tsx";
+import UserProfile from "./pages/UserProfile.tsx";
 import Friends from "./pages/Friends.tsx";
 import Music from "./pages/Music.tsx";
 import Photos from "./pages/Photos.tsx";
@@ -38,6 +39,7 @@ const App = () => (
           <Route path="/messenger" element={<Messenger />} />
           <Route path="/calls" element={<SimplePage title="Звонки" />} />
           <Route path="/friends" element={<Friends />} />
+          <Route path="/profile/:id" element={<UserProfile />} />
           <Route path="/groups" element={<Groups />} />
           <Route path="/photos" element={<Photos />} />
           <Route path="/music" element={<Music />} />
