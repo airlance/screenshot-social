@@ -301,17 +301,23 @@ const UserProfile = () => {
       {/* Контент */}
       <section className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-3">
         {profile.closed ? (
-          <div className="vk-card p-5 flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center shrink-0">
-              <Lock className="w-6 h-6 text-muted-foreground" />
+          <div className="vk-card p-6 flex flex-col items-center text-center gap-3">
+            <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center">
+              <Lock className="w-7 h-7 text-muted-foreground" />
             </div>
-            <div className="min-w-0">
-              <div className="font-semibold">Это закрытый профиль</div>
-              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                Добавьте {profile.name.split(" ")[0]} в друзья, чтобы смотреть
-                его посты, фотографии и другие материалы
-              </p>
-            </div>
+            <div className="font-semibold text-base">Это закрытый профиль</div>
+            <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
+              Записи, фотографии и другие материалы {profile.name.split(" ")[0]} скрыты.
+              Чтобы получить доступ, отправьте заявку в друзья или запросите доступ.
+            </p>
+            <button
+              onClick={onAddFriend}
+              className={`vk-pill rounded-lg px-5 mt-1 ${
+                requestSent ? "!bg-secondary" : ""
+              }`}
+            >
+              {requestSent ? "Запрос отправлен" : "Запросить доступ"}
+            </button>
           </div>
         ) : (
           <div className="vk-card p-4">
