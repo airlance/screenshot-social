@@ -522,10 +522,10 @@ const CallScreen = ({ onClose }: { onClose: () => void }) => {
   const [message, setMessage] = useState("");
 
   // Tick
-  useState(() => {
+  useEffect(() => {
     const t = setInterval(() => setSeconds((s) => s + 1), 1000);
     return () => clearInterval(t);
-  });
+  }, []);
 
   const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
   const ss = String(seconds % 60).padStart(2, "0");
