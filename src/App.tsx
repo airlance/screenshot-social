@@ -14,6 +14,7 @@ import Video from "./pages/Video.tsx";
 import Groups from "./pages/Groups.tsx";
 import Market from "./pages/Market.tsx";
 import Messenger from "./pages/Messenger.tsx";
+import Calls from "./pages/Calls.tsx";
 import Analytics from "./pages/Analytics.tsx";
 import Stickers from "./pages/Stickers.tsx";
 import Clips from "./pages/Clips.tsx";
@@ -37,7 +38,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/feed" element={<Feed />} />
           <Route path="/messenger" element={<Messenger />} />
-          <Route path="/calls" element={<SimplePage title="Звонки" />} />
+          <Route path="/calls" element={<Calls />} />
           <Route path="/friends" element={<Friends />} />
           <Route path="/profile/:id" element={<UserProfile />} />
           <Route path="/groups" element={<Groups />} />
