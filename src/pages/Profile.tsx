@@ -127,6 +127,14 @@ const Profile = () => {
   const [avatarError, setAvatarError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("photos");
+  const [feedSort, setFeedSort] = useState<FeedSort>("date");
+
+  const sortedPosts = useMemo(() => {
+    const arr = [...userPosts];
+    if (feedSort === "popular") arr.sort((a, b) => b.stats.likes - a.stats.likes);
+    else arr.sort((a, b) => b.createdAt - a.createdAt);
+    return arr;
+  }, [feedSort]);
 
   const profilePhotos = useMemo(() => [postPhoto1, postPhoto2, postPhoto3, postPhoto4, photo1, post1], []);
 
