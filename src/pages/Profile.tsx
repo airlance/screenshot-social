@@ -120,8 +120,9 @@ const Profile = () => {
   const [avatarStep, setAvatarStep] = useState<AvatarStep>("upload");
   const [avatarError, setAvatarError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [activeTab, setActiveTab] = useState<TabKey>("photos");
 
-  const profilePhotos = useMemo(() => [photo1, postPhoto1, postPhoto2], []);
+  const profilePhotos = useMemo(() => [postPhoto1, postPhoto2, postPhoto3, postPhoto4, photo1, post1], []);
 
   const openAvatarUpload = () => {
     setAvatarMenuOpen(false);
