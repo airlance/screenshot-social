@@ -2,6 +2,8 @@ import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { CreatePost } from "@/components/feed/CreatePost";
+import { PostCard } from "@/components/feed/PostCard";
+import type { Post } from "@/components/feed/types";
 import {
   AlertCircle,
   BarChart3,
@@ -14,6 +16,7 @@ import {
   ListFilter,
   Music,
   PenLine,
+  Play,
   Plus,
   RotateCcw,
   RotateCw,
@@ -30,15 +33,81 @@ import { cn } from "@/lib/utils";
 import photo1 from "@/assets/photo-1.jpg";
 import postPhoto1 from "@/assets/post-photo-1.jpg";
 import postPhoto2 from "@/assets/post-photo-2.jpg";
+import postPhoto3 from "@/assets/post-photo-3.jpg";
+import postPhoto4 from "@/assets/post-photo-4.jpg";
+import post1 from "@/assets/post-1.jpg";
+import videoThumb from "@/assets/post-video-thumb.jpg";
+import musicCover from "@/assets/post-music-cover.jpg";
 import avatarMe from "@/assets/avatar-me.jpg";
 
-const tabs = [
-  { label: "Фото", icon: ImageIcon, active: true },
-  { label: "Альбомы", icon: ImageIcon },
-  { label: "Видео", icon: Video },
-  { label: "Клипы", icon: Crop },
-  { label: "Музыка", icon: Music },
-  { label: "Статьи", icon: ListFilter },
+type TabKey = "photos" | "albums" | "videos" | "clips" | "music" | "articles";
+
+const tabs: { key: TabKey; label: string; icon: typeof ImageIcon }[] = [
+  { key: "photos", label: "Фото", icon: ImageIcon },
+  { key: "albums", label: "Альбомы", icon: ImageIcon },
+  { key: "videos", label: "Видео", icon: Video },
+  { key: "clips", label: "Клипы", icon: Crop },
+  { key: "music", label: "Музыка", icon: Music },
+  { key: "articles", label: "Статьи", icon: ListFilter },
+];
+
+const wave = (n: number, seed = 1) =>
+  Array.from({ length: n }, (_, i) => 0.3 + 0.7 * Math.abs(Math.sin((i + seed) * 1.7)));
+
+const userPosts: Post[] = [
+  {
+    id: "u1",
+    author: { name: "Mark Roberts", avatar: avatarMe, subtitle: "2 ч назад" },
+    time: "2 ч",
+    text: "Сегодня прогулялся по центру — поймал отличный свет на закате. Делюсь кадрами 🌇",
+    media: [{ type: "photo", images: [postPhoto1, postPhoto2, postPhoto3] }],
+    stats: { likes: 184, comments: 23, shares: 4 },
+  },
+  {
+    id: "u2",
+    author: { name: "Mark Roberts", avatar: avatarMe, subtitle: "Вчера" },
+    time: "вчера",
+    text: "Маленькая мысль на вечер: лучшее время начать — сейчас. Самые сложные шаги всегда первые, а потом дорога сама ведёт.",
+    stats: { likes: 412, comments: 47, shares: 12 },
+  },
+  {
+    id: "u3",
+    author: { name: "Mark Roberts", avatar: avatarMe, subtitle: "3 д назад" },
+    time: "3 д",
+    text: "Записал короткое видео из мастерской — показываю процесс 🎬",
+    media: [{ type: "video", video: { kind: "upload", thumbnail: videoThumb, duration: "0:48" } }],
+    stats: { likes: 96, comments: 11, shares: 2 },
+  },
+  {
+    id: "u4",
+    author: { name: "Mark Roberts", avatar: avatarMe, subtitle: "Неделю назад" },
+    time: "1 нед",
+    text: "Голосовое — поделился впечатлениями от поездки 🎙️",
+    media: [{ type: "audio", audio: { kind: "voice", duration: "0:42", waveform: wave(36, 5) } }],
+    stats: { likes: 58, comments: 6, shares: 1 },
+  },
+];
+
+const userPhotos = [postPhoto1, postPhoto2, postPhoto3, postPhoto4, photo1, post1];
+const userVideos = [
+  { thumb: videoThumb, duration: "0:48", title: "В мастерской" },
+  { thumb: postPhoto4, duration: "1:24", title: "Закат у моря" },
+  { thumb: post1, duration: "2:10", title: "Концерт" },
+];
+const userClips = [postPhoto2, postPhoto3, postPhoto1, postPhoto4];
+const userAlbums = [
+  { cover: postPhoto1, title: "Путешествия", count: 24 },
+  { cover: photo1, title: "Семья", count: 12 },
+  { cover: post1, title: "Концерты", count: 8 },
+];
+const userTracks = [
+  { title: "Midnight Drive", artist: "Lo-Fi Bear", duration: "3:24" },
+  { title: "Soft Rain", artist: "Aurora", duration: "2:58" },
+  { title: "Coffee & Code", artist: "Nordic Loops", duration: "4:12" },
+];
+const userArticles = [
+  { title: "Как я научился фотографировать на смартфон", time: "5 мин чтения", date: "20 апр" },
+  { title: "Минимализм в повседневной жизни", time: "8 мин чтения", date: "12 мар" },
 ];
 
 type AvatarStep = "upload" | "crop" | "thumb" | "finish";
@@ -51,8 +120,9 @@ const Profile = () => {
   const [avatarStep, setAvatarStep] = useState<AvatarStep>("upload");
   const [avatarError, setAvatarError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [activeTab, setActiveTab] = useState<TabKey>("photos");
 
-  const profilePhotos = useMemo(() => [photo1, postPhoto1, postPhoto2], []);
+  const profilePhotos = useMemo(() => [postPhoto1, postPhoto2, postPhoto3, postPhoto4, photo1, post1], []);
 
   const openAvatarUpload = () => {
     setAvatarMenuOpen(false);
@@ -236,22 +306,122 @@ const Profile = () => {
       <section className="flex flex-col gap-3">
           <div className="vk-card overflow-hidden rounded-xl p-3">
             <div className="mb-3 flex gap-1 overflow-x-auto scrollbar-none">
-              {tabs.map(({ label, icon: Icon, active }) => (
-                <button key={label} className={cn("flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors", active ? "bg-secondary text-foreground" : "text-muted-foreground hover:bg-secondary/60")}>
-                  <Icon className="h-4 w-4" /> {label}
-                </button>
-              ))}
+              {tabs.map(({ key, label, icon: Icon }) => {
+                const active = activeTab === key;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setActiveTab(key)}
+                    className={cn(
+                      "flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors",
+                      active ? "bg-secondary text-foreground" : "text-muted-foreground hover:bg-secondary/60",
+                    )}
+                  >
+                    <Icon className="h-4 w-4" /> {label}
+                  </button>
+                );
+              })}
             </div>
-            <div className="grid grid-cols-3 gap-1 overflow-hidden rounded-lg">
-              {profilePhotos.map((src, index) => <img key={src} src={src} alt={`Фото профиля ${index + 1}`} className="aspect-square w-full object-cover" loading="lazy" />)}
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <button className="vk-pill !bg-secondary/70">Загрузить фото</button>
-              <button className="vk-pill !bg-secondary/70">Показать всё</button>
-            </div>
+
+            {activeTab === "photos" && (
+              <>
+                <div className="grid grid-cols-3 gap-1 overflow-hidden rounded-lg">
+                  {profilePhotos.map((src, index) => (
+                    <img key={src + index} src={src} alt={`Фото ${index + 1}`} className="aspect-square w-full object-cover" loading="lazy" />
+                  ))}
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <button className="vk-pill !bg-secondary/70">Загрузить фото</button>
+                  <button className="vk-pill !bg-secondary/70">Показать всё</button>
+                </div>
+              </>
+            )}
+
+            {activeTab === "albums" && (
+              <div className="grid grid-cols-3 gap-2">
+                {userAlbums.map((a) => (
+                  <div key={a.title} className="overflow-hidden rounded-lg">
+                    <div className="aspect-square overflow-hidden rounded-lg bg-secondary">
+                      <img src={a.cover} alt={a.title} className="h-full w-full object-cover" loading="lazy" />
+                    </div>
+                    <div className="mt-2 px-1">
+                      <div className="truncate text-sm font-semibold">{a.title}</div>
+                      <div className="text-xs text-muted-foreground">{a.count} фото</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {activeTab === "videos" && (
+              <div className="grid grid-cols-3 gap-2">
+                {userVideos.map((v) => (
+                  <div key={v.title} className="group cursor-pointer">
+                    <div className="relative aspect-video overflow-hidden rounded-lg bg-secondary">
+                      <img src={v.thumb} alt={v.title} className="h-full w-full object-cover" loading="lazy" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 transition-opacity group-hover:opacity-100">
+                        <Play className="h-8 w-8 fill-white text-white" />
+                      </div>
+                      <span className="absolute bottom-1.5 right-1.5 rounded bg-black/70 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                        {v.duration}
+                      </span>
+                    </div>
+                    <div className="mt-2 truncate px-1 text-sm font-semibold">{v.title}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {activeTab === "clips" && (
+              <div className="grid grid-cols-4 gap-2">
+                {userClips.map((src, i) => (
+                  <div key={i} className="relative aspect-[9/16] overflow-hidden rounded-lg bg-secondary">
+                    <img src={src} alt={`Клип ${i + 1}`} className="h-full w-full object-cover" loading="lazy" />
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                      <Play className="h-4 w-4 fill-white text-white" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {activeTab === "music" && (
+              <div className="flex flex-col">
+                {userTracks.map((t, i) => (
+                  <div key={i} className="flex items-center gap-3 rounded-lg p-2 hover:bg-secondary/60">
+                    <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded">
+                      <img src={musicCover} alt={t.title} className="h-full w-full object-cover" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity hover:opacity-100">
+                        <Play className="h-4 w-4 fill-white text-white" />
+                      </div>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-semibold">{t.title}</div>
+                      <div className="truncate text-xs text-muted-foreground">{t.artist}</div>
+                    </div>
+                    <div className="text-xs text-muted-foreground">{t.duration}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {activeTab === "articles" && (
+              <div className="flex flex-col gap-2">
+                {userArticles.map((a, i) => (
+                  <div key={i} className="rounded-lg border border-border p-3 hover:bg-secondary/40">
+                    <div className="font-semibold">{a.title}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">{a.date} · {a.time}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
+
           <CreatePost />
-          <div className="vk-card flex justify-center p-8"><Search className="h-6 w-6 text-muted-foreground" /></div>
+
+          {userPosts.map((p) => (
+            <PostCard key={p.id} post={p} />
+          ))}
       </section>
 
       {renderAvatarDialog()}
