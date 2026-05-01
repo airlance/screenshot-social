@@ -38,30 +38,20 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import vmojiArt from "@/assets/avatar-2.jpg";
-
-type CallItem = {
-  id: string;
-  title: string;
-  subtitle: string;
-  duration: string;
-  date: string;
-  time: string;
-};
-
-const HISTORY: CallItem[] = [
-  {
-    id: "g-1",
-    title: "Групповой звонок 27.04.2026",
-    subtitle: "Групповой · 11:47",
-    duration: "0:29",
-    date: "27.04.2026",
-    time: "11:47",
-  },
-];
+import { fetchCalls, type CallItem, type CallStatus } from "@/services/callsService";
 
 const STICKERS = ["🐻", "🦊", "🐱", "🐶", "🦁", "🐼"];
+
+const TAB_TITLES: Record<CallStatus | "main", string> = {
+  main: "История звонков",
+  active: "Активные звонки",
+  scheduled: "Запланированные звонки",
+  history: "История звонков",
+  missed: "Пропущенные звонки",
+};
 
 type Tab = "main" | "call-friends" | "active" | "scheduled" | "history" | "missed" | "records" | "transcripts";
 
