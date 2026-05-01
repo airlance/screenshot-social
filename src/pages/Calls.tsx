@@ -59,7 +59,8 @@ const Calls = () => {
   const { toast } = useToast();
   const [tab, setTab] = useState<Tab>("main");
 
-  const [items, setItems] = useState<CallItem[]>(HISTORY);
+  const [items, setItems] = useState<CallItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
@@ -72,6 +73,19 @@ const Calls = () => {
   const [screenShare, setScreenShare] = useState(true);
   const [reactions, setReactions] = useState(true);
   const [coWatch, setCoWatch] = useState(true);
+
+  useEffect(() => {
+    let alive = true;
+    setLoading(true);
+    fetchCalls().then((data) => {
+      if (!alive) return;
+      setItems(data);
+      setLoading(false);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const removeItem = (id: string) => {
     setItems((prev) => prev.filter((i) => i.id !== id));
