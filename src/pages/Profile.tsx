@@ -2,6 +2,8 @@ import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { CreatePost } from "@/components/feed/CreatePost";
+import { PostCard } from "@/components/feed/PostCard";
+import type { Post } from "@/components/feed/types";
 import {
   AlertCircle,
   BarChart3,
@@ -14,6 +16,7 @@ import {
   ListFilter,
   Music,
   PenLine,
+  Play,
   Plus,
   RotateCcw,
   RotateCw,
@@ -30,15 +33,81 @@ import { cn } from "@/lib/utils";
 import photo1 from "@/assets/photo-1.jpg";
 import postPhoto1 from "@/assets/post-photo-1.jpg";
 import postPhoto2 from "@/assets/post-photo-2.jpg";
+import postPhoto3 from "@/assets/post-photo-3.jpg";
+import postPhoto4 from "@/assets/post-photo-4.jpg";
+import post1 from "@/assets/post-1.jpg";
+import videoThumb from "@/assets/post-video-thumb.jpg";
+import musicCover from "@/assets/post-music-cover.jpg";
 import avatarMe from "@/assets/avatar-me.jpg";
 
-const tabs = [
-  { label: "Фото", icon: ImageIcon, active: true },
-  { label: "Альбомы", icon: ImageIcon },
-  { label: "Видео", icon: Video },
-  { label: "Клипы", icon: Crop },
-  { label: "Музыка", icon: Music },
-  { label: "Статьи", icon: ListFilter },
+type TabKey = "photos" | "albums" | "videos" | "clips" | "music" | "articles";
+
+const tabs: { key: TabKey; label: string; icon: typeof ImageIcon }[] = [
+  { key: "photos", label: "Фото", icon: ImageIcon },
+  { key: "albums", label: "Альбомы", icon: ImageIcon },
+  { key: "videos", label: "Видео", icon: Video },
+  { key: "clips", label: "Клипы", icon: Crop },
+  { key: "music", label: "Музыка", icon: Music },
+  { key: "articles", label: "Статьи", icon: ListFilter },
+];
+
+const wave = (n: number, seed = 1) =>
+  Array.from({ length: n }, (_, i) => 0.3 + 0.7 * Math.abs(Math.sin((i + seed) * 1.7)));
+
+const userPosts: Post[] = [
+  {
+    id: "u1",
+    author: { name: "Mark Roberts", avatar: avatarMe, subtitle: "2 ч назад" },
+    time: "2 ч",
+    text: "Сегодня прогулялся по центру — поймал отличный свет на закате. Делюсь кадрами 🌇",
+    media: [{ type: "photo", images: [postPhoto1, postPhoto2, postPhoto3] }],
+    stats: { likes: 184, comments: 23, shares: 4 },
+  },
+  {
+    id: "u2",
+    author: { name: "Mark Roberts", avatar: avatarMe, subtitle: "Вчера" },
+    time: "вчера",
+    text: "Маленькая мысль на вечер: лучшее время начать — сейчас. Самые сложные шаги всегда первые, а потом дорога сама ведёт.",
+    stats: { likes: 412, comments: 47, shares: 12 },
+  },
+  {
+    id: "u3",
+    author: { name: "Mark Roberts", avatar: avatarMe, subtitle: "3 д назад" },
+    time: "3 д",
+    text: "Записал короткое видео из мастерской — показываю процесс 🎬",
+    media: [{ type: "video", video: { kind: "upload", thumbnail: videoThumb, duration: "0:48" } }],
+    stats: { likes: 96, comments: 11, shares: 2 },
+  },
+  {
+    id: "u4",
+    author: { name: "Mark Roberts", avatar: avatarMe, subtitle: "Неделю назад" },
+    time: "1 нед",
+    text: "Голосовое — поделился впечатлениями от поездки 🎙️",
+    media: [{ type: "audio", audio: { kind: "voice", duration: "0:42", waveform: wave(36, 5) } }],
+    stats: { likes: 58, comments: 6, shares: 1 },
+  },
+];
+
+const userPhotos = [postPhoto1, postPhoto2, postPhoto3, postPhoto4, photo1, post1];
+const userVideos = [
+  { thumb: videoThumb, duration: "0:48", title: "В мастерской" },
+  { thumb: postPhoto4, duration: "1:24", title: "Закат у моря" },
+  { thumb: post1, duration: "2:10", title: "Концерт" },
+];
+const userClips = [postPhoto2, postPhoto3, postPhoto1, postPhoto4];
+const userAlbums = [
+  { cover: postPhoto1, title: "Путешествия", count: 24 },
+  { cover: photo1, title: "Семья", count: 12 },
+  { cover: post1, title: "Концерты", count: 8 },
+];
+const userTracks = [
+  { title: "Midnight Drive", artist: "Lo-Fi Bear", duration: "3:24" },
+  { title: "Soft Rain", artist: "Aurora", duration: "2:58" },
+  { title: "Coffee & Code", artist: "Nordic Loops", duration: "4:12" },
+];
+const userArticles = [
+  { title: "Как я научился фотографировать на смартфон", time: "5 мин чтения", date: "20 апр" },
+  { title: "Минимализм в повседневной жизни", time: "8 мин чтения", date: "12 мар" },
 ];
 
 type AvatarStep = "upload" | "crop" | "thumb" | "finish";
