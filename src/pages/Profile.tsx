@@ -306,22 +306,122 @@ const Profile = () => {
       <section className="flex flex-col gap-3">
           <div className="vk-card overflow-hidden rounded-xl p-3">
             <div className="mb-3 flex gap-1 overflow-x-auto scrollbar-none">
-              {tabs.map(({ label, icon: Icon, active }) => (
-                <button key={label} className={cn("flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors", active ? "bg-secondary text-foreground" : "text-muted-foreground hover:bg-secondary/60")}>
-                  <Icon className="h-4 w-4" /> {label}
-                </button>
-              ))}
+              {tabs.map(({ key, label, icon: Icon }) => {
+                const active = activeTab === key;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setActiveTab(key)}
+                    className={cn(
+                      "flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors",
+                      active ? "bg-secondary text-foreground" : "text-muted-foreground hover:bg-secondary/60",
+                    )}
+                  >
+                    <Icon className="h-4 w-4" /> {label}
+                  </button>
+                );
+              })}
             </div>
-            <div className="grid grid-cols-3 gap-1 overflow-hidden rounded-lg">
-              {profilePhotos.map((src, index) => <img key={src} src={src} alt={`Фото профиля ${index + 1}`} className="aspect-square w-full object-cover" loading="lazy" />)}
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <button className="vk-pill !bg-secondary/70">Загрузить фото</button>
-              <button className="vk-pill !bg-secondary/70">Показать всё</button>
-            </div>
+
+            {activeTab === "photos" && (
+              <>
+                <div className="grid grid-cols-3 gap-1 overflow-hidden rounded-lg">
+                  {profilePhotos.map((src, index) => (
+                    <img key={src + index} src={src} alt={`Фото ${index + 1}`} className="aspect-square w-full object-cover" loading="lazy" />
+                  ))}
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <button className="vk-pill !bg-secondary/70">Загрузить фото</button>
+                  <button className="vk-pill !bg-secondary/70">Показать всё</button>
+                </div>
+              </>
+            )}
+
+            {activeTab === "albums" && (
+              <div className="grid grid-cols-3 gap-2">
+                {userAlbums.map((a) => (
+                  <div key={a.title} className="overflow-hidden rounded-lg">
+                    <div className="aspect-square overflow-hidden rounded-lg bg-secondary">
+                      <img src={a.cover} alt={a.title} className="h-full w-full object-cover" loading="lazy" />
+                    </div>
+                    <div className="mt-2 px-1">
+                      <div className="truncate text-sm font-semibold">{a.title}</div>
+                      <div className="text-xs text-muted-foreground">{a.count} фото</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {activeTab === "videos" && (
+              <div className="grid grid-cols-3 gap-2">
+                {userVideos.map((v) => (
+                  <div key={v.title} className="group cursor-pointer">
+                    <div className="relative aspect-video overflow-hidden rounded-lg bg-secondary">
+                      <img src={v.thumb} alt={v.title} className="h-full w-full object-cover" loading="lazy" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 transition-opacity group-hover:opacity-100">
+                        <Play className="h-8 w-8 fill-white text-white" />
+                      </div>
+                      <span className="absolute bottom-1.5 right-1.5 rounded bg-black/70 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                        {v.duration}
+                      </span>
+                    </div>
+                    <div className="mt-2 truncate px-1 text-sm font-semibold">{v.title}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {activeTab === "clips" && (
+              <div className="grid grid-cols-4 gap-2">
+                {userClips.map((src, i) => (
+                  <div key={i} className="relative aspect-[9/16] overflow-hidden rounded-lg bg-secondary">
+                    <img src={src} alt={`Клип ${i + 1}`} className="h-full w-full object-cover" loading="lazy" />
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                      <Play className="h-4 w-4 fill-white text-white" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {activeTab === "music" && (
+              <div className="flex flex-col">
+                {userTracks.map((t, i) => (
+                  <div key={i} className="flex items-center gap-3 rounded-lg p-2 hover:bg-secondary/60">
+                    <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded">
+                      <img src={musicCover} alt={t.title} className="h-full w-full object-cover" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity hover:opacity-100">
+                        <Play className="h-4 w-4 fill-white text-white" />
+                      </div>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-semibold">{t.title}</div>
+                      <div className="truncate text-xs text-muted-foreground">{t.artist}</div>
+                    </div>
+                    <div className="text-xs text-muted-foreground">{t.duration}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {activeTab === "articles" && (
+              <div className="flex flex-col gap-2">
+                {userArticles.map((a, i) => (
+                  <div key={i} className="rounded-lg border border-border p-3 hover:bg-secondary/40">
+                    <div className="font-semibold">{a.title}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">{a.date} · {a.time}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
+
           <CreatePost />
-          <div className="vk-card flex justify-center p-8"><Search className="h-6 w-6 text-muted-foreground" /></div>
+
+          {userPosts.map((p) => (
+            <PostCard key={p.id} post={p} />
+          ))}
       </section>
 
       {renderAvatarDialog()}
