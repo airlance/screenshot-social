@@ -200,51 +200,81 @@ const Calls = () => {
         />
       </div>
 
-      {/* History list / empty states */}
-      {tab === "main" || tab === "history" ? (
-        <div className="vk-card p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="font-semibold">История звонков</div>
-            {items.length > 0 && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="text-xs text-muted-foreground flex items-center gap-1 hover:text-foreground">
-                    Ещё <ChevronDown className="w-3 h-3" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="rounded-xl border-border bg-popover p-2 shadow-elevated"
-                >
-                  <DropdownMenuItem
-                    onClick={() => setItems([])}
-                    className="gap-3 py-2 text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4" /> Очистить историю
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
+      {/* List for status tabs / empty for service tabs */}
+      {tab === "main" || tab === "active" || tab === "scheduled" || tab === "history" || tab === "missed" ? (
+        (() => {
+          const filtered =
+            tab === "main" || tab === "history"
+              ? items.filter((i) => i.status === "history")
+              : items.filter((i) => i.status === tab);
+          const title = TAB_TITLES[tab as CallStatus | "main"];
+          const emptyText: Record<string, string> = {
+            main: "Здесь будет отображаться полная история ваших звонков",
+            history: "Здесь будет отображаться полная история ваших звонков",
+            active: "Сейчас нет активных звонков",
+            scheduled: "У вас нет запланированных звонков",
+            missed: "Пропущенных звонков нет",
+          };
+          return (
+            <div className="vk-card p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="font-semibold">{title}</div>
+                {(tab === "main" || tab === "history") && filtered.length > 0 && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="text-xs text-muted-foreground flex items-center gap-1 hover:text-foreground">
+                        Ещё <ChevronDown className="w-3 h-3" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="end"
+                      className="rounded-xl border-border bg-popover p-2 shadow-elevated"
+                    >
+                      <DropdownMenuItem
+                        onClick={() =>
+                          setItems((prev) => prev.filter((i) => i.status !== "history"))
+                        }
+                        className="gap-3 py-2 text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4" /> Очистить историю
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
 
-          {items.length === 0 ? (
-            <div className="py-12 text-center text-sm text-muted-foreground">
-              Здесь будет отображаться полная история ваших звонков
+              {loading ? (
+                <div className="flex flex-col gap-2">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-3 py-2">
+                      <Skeleton className="w-11 h-11 rounded-full" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-3 w-1/2" />
+                        <Skeleton className="h-3 w-1/3" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : filtered.length === 0 ? (
+                <div className="py-12 text-center text-sm text-muted-foreground">
+                  {emptyText[tab]}
+                </div>
+              ) : (
+                <div className="flex flex-col">
+                  {filtered.map((it) => (
+                    <CallRow
+                      key={it.id}
+                      item={it}
+                      onCall={() => setCallOpen(true)}
+                      onVideo={() => setCallOpen(true)}
+                      onDelete={() => removeItem(it.id)}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="flex flex-col">
-              {items.map((it) => (
-                <CallRow
-                  key={it.id}
-                  item={it}
-                  onCall={() => setCallOpen(true)}
-                  onVideo={() => setCallOpen(true)}
-                  onDelete={() => removeItem(it.id)}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+          );
+        })()
       ) : (
         <EmptyTab tab={tab} />
       )}
