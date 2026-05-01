@@ -433,7 +433,31 @@ const Profile = () => {
 
           <CreatePost />
 
-          {userPosts.map((p) => (
+          <div className="vk-card flex items-center justify-between gap-2 px-4 py-2.5">
+            <div className="text-sm font-semibold text-muted-foreground">Сортировка ленты</div>
+            <div className="inline-flex items-center gap-1 rounded-full bg-secondary/60 p-1">
+              <button
+                onClick={() => setFeedSort("date")}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
+                  feedSort === "date" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                По дате
+              </button>
+              <button
+                onClick={() => setFeedSort("popular")}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
+                  feedSort === "popular" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                По популярности
+              </button>
+            </div>
+          </div>
+
+          {sortedPosts.map((p) => (
             <PostCard key={p.id} post={p} />
           ))}
       </section>
