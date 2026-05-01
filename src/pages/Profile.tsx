@@ -54,11 +54,14 @@ const tabs: { key: TabKey; label: string; icon: typeof ImageIcon }[] = [
 const wave = (n: number, seed = 1) =>
   Array.from({ length: n }, (_, i) => 0.3 + 0.7 * Math.abs(Math.sin((i + seed) * 1.7)));
 
-const userPosts: Post[] = [
+type FeedSort = "date" | "popular";
+
+const userPosts: (Post & { createdAt: number })[] = [
   {
     id: "u1",
     author: { name: "Mark Roberts", avatar: avatarMe, subtitle: "2 ч назад" },
     time: "2 ч",
+    createdAt: Date.now() - 2 * 60 * 60 * 1000,
     text: "Сегодня прогулялся по центру — поймал отличный свет на закате. Делюсь кадрами 🌇",
     media: [{ type: "photo", images: [postPhoto1, postPhoto2, postPhoto3] }],
     stats: { likes: 184, comments: 23, shares: 4 },
@@ -67,6 +70,7 @@ const userPosts: Post[] = [
     id: "u2",
     author: { name: "Mark Roberts", avatar: avatarMe, subtitle: "Вчера" },
     time: "вчера",
+    createdAt: Date.now() - 24 * 60 * 60 * 1000,
     text: "Маленькая мысль на вечер: лучшее время начать — сейчас. Самые сложные шаги всегда первые, а потом дорога сама ведёт.",
     stats: { likes: 412, comments: 47, shares: 12 },
   },
@@ -74,6 +78,7 @@ const userPosts: Post[] = [
     id: "u3",
     author: { name: "Mark Roberts", avatar: avatarMe, subtitle: "3 д назад" },
     time: "3 д",
+    createdAt: Date.now() - 3 * 24 * 60 * 60 * 1000,
     text: "Записал короткое видео из мастерской — показываю процесс 🎬",
     media: [{ type: "video", video: { kind: "upload", thumbnail: videoThumb, duration: "0:48" } }],
     stats: { likes: 96, comments: 11, shares: 2 },
@@ -82,6 +87,7 @@ const userPosts: Post[] = [
     id: "u4",
     author: { name: "Mark Roberts", avatar: avatarMe, subtitle: "Неделю назад" },
     time: "1 нед",
+    createdAt: Date.now() - 7 * 24 * 60 * 60 * 1000,
     text: "Голосовое — поделился впечатлениями от поездки 🎙️",
     media: [{ type: "audio", audio: { kind: "voice", duration: "0:42", waveform: wave(36, 5) } }],
     stats: { likes: 58, comments: 6, shares: 1 },
@@ -121,6 +127,14 @@ const Profile = () => {
   const [avatarError, setAvatarError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("photos");
+  const [feedSort, setFeedSort] = useState<FeedSort>("date");
+
+  const sortedPosts = useMemo(() => {
+    const arr = [...userPosts];
+    if (feedSort === "popular") arr.sort((a, b) => b.stats.likes - a.stats.likes);
+    else arr.sort((a, b) => b.createdAt - a.createdAt);
+    return arr;
+  }, [feedSort]);
 
   const profilePhotos = useMemo(() => [postPhoto1, postPhoto2, postPhoto3, postPhoto4, photo1, post1], []);
 
@@ -419,7 +433,31 @@ const Profile = () => {
 
           <CreatePost />
 
-          {userPosts.map((p) => (
+          <div className="vk-card flex items-center justify-between gap-2 px-4 py-2.5">
+            <div className="text-sm font-semibold text-muted-foreground">Сортировка ленты</div>
+            <div className="inline-flex items-center gap-1 rounded-full bg-secondary/60 p-1">
+              <button
+                onClick={() => setFeedSort("date")}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
+                  feedSort === "date" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                По дате
+              </button>
+              <button
+                onClick={() => setFeedSort("popular")}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
+                  feedSort === "popular" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                По популярности
+              </button>
+            </div>
+          </div>
+
+          {sortedPosts.map((p) => (
             <PostCard key={p.id} post={p} />
           ))}
       </section>
