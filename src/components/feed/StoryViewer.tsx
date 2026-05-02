@@ -192,20 +192,14 @@ export const StoryViewer = ({ open, onOpenChange, startUserId }: Props) => {
                 (document.activeElement as HTMLElement | null)?.blur?.();
               }}
               className="absolute bottom-0 left-0 right-0 z-30 p-3 flex items-center gap-2 bg-gradient-to-t from-black/70 to-transparent"
-              onClick={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
             >
               <input
                 type="text"
                 value={reply}
                 onChange={(e) => setReply(e.target.value)}
-                onFocus={() => {
-                  setInputFocused(true);
-                  pausedRef.current = true;
-                }}
-                onBlur={() => {
-                  setInputFocused(false);
-                  pausedRef.current = false;
-                }}
+                onFocus={() => setInputFocused(true)}
+                onBlur={() => setInputFocused(false)}
                 placeholder={`Ответить ${currentUser.name}…`}
                 className="flex-1 h-10 px-4 rounded-full bg-white/10 border border-white/20 text-white text-sm placeholder:text-white/60 outline-none focus:border-white/60"
               />
