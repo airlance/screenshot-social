@@ -21,9 +21,15 @@ export const StoryViewer = ({ open, onOpenChange, startUserId }: Props) => {
   const [progress, setProgress] = useState(0);
   const [reply, setReply] = useState("");
   const [inputFocused, setInputFocused] = useState(false);
+  const [holdPause, setHoldPause] = useState(false);
   const rafRef = useRef<number>();
   const startRef = useRef<number>(0);
   const pausedRef = useRef(false);
+
+  // Keep pausedRef in sync with the two independent pause sources
+  useEffect(() => {
+    pausedRef.current = inputFocused || holdPause;
+  }, [inputFocused, holdPause]);
 
   useEffect(() => {
     if (!open || !startUserId) return;
@@ -100,13 +106,20 @@ export const StoryViewer = ({ open, onOpenChange, startUserId }: Props) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="max-w-md p-0 bg-black border-none overflow-hidden"
-        onPointerDown={() => (pausedRef.current = true)}
-        onPointerUp={() => (pausedRef.current = false)}
-        onPointerLeave={() => (pausedRef.current = false)}
-      >
+      <DialogContent className="max-w-md p-0 bg-black border-none overflow-hidden">
         <div className="relative w-full aspect-[9/16] bg-black">
+          {/* Hold-to-pause overlay (only over the media area, behind controls) */}
+          <div
+            className="absolute inset-0 z-0"
+            onPointerDown={(e) => {
+              // only main button / touch
+              if (e.pointerType === "mouse" && e.button !== 0) return;
+              setHoldPause(true);
+            }}
+            onPointerUp={() => setHoldPause(false)}
+            onPointerCancel={() => setHoldPause(false)}
+            onPointerLeave={() => setHoldPause(false)}
+          />
           {/* Progress bars */}
           <div className="absolute top-2 left-2 right-2 z-20 flex gap-1">
             {currentUser.items.map((_, i) => (
@@ -179,20 +192,14 @@ export const StoryViewer = ({ open, onOpenChange, startUserId }: Props) => {
                 (document.activeElement as HTMLElement | null)?.blur?.();
               }}
               className="absolute bottom-0 left-0 right-0 z-30 p-3 flex items-center gap-2 bg-gradient-to-t from-black/70 to-transparent"
-              onClick={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
             >
               <input
                 type="text"
                 value={reply}
                 onChange={(e) => setReply(e.target.value)}
-                onFocus={() => {
-                  setInputFocused(true);
-                  pausedRef.current = true;
-                }}
-                onBlur={() => {
-                  setInputFocused(false);
-                  pausedRef.current = false;
-                }}
+                onFocus={() => setInputFocused(true)}
+                onBlur={() => setInputFocused(false)}
                 placeholder={`Ответить ${currentUser.name}…`}
                 className="flex-1 h-10 px-4 rounded-full bg-white/10 border border-white/20 text-white text-sm placeholder:text-white/60 outline-none focus:border-white/60"
               />
