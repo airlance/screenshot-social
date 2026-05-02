@@ -21,9 +21,15 @@ export const StoryViewer = ({ open, onOpenChange, startUserId }: Props) => {
   const [progress, setProgress] = useState(0);
   const [reply, setReply] = useState("");
   const [inputFocused, setInputFocused] = useState(false);
+  const [holdPause, setHoldPause] = useState(false);
   const rafRef = useRef<number>();
   const startRef = useRef<number>(0);
   const pausedRef = useRef(false);
+
+  // Keep pausedRef in sync with the two independent pause sources
+  useEffect(() => {
+    pausedRef.current = inputFocused || holdPause;
+  }, [inputFocused, holdPause]);
 
   useEffect(() => {
     if (!open || !startUserId) return;
@@ -100,13 +106,20 @@ export const StoryViewer = ({ open, onOpenChange, startUserId }: Props) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="max-w-md p-0 bg-black border-none overflow-hidden"
-        onPointerDown={() => (pausedRef.current = true)}
-        onPointerUp={() => (pausedRef.current = false)}
-        onPointerLeave={() => (pausedRef.current = false)}
-      >
+      <DialogContent className="max-w-md p-0 bg-black border-none overflow-hidden">
         <div className="relative w-full aspect-[9/16] bg-black">
+          {/* Hold-to-pause overlay (only over the media area, behind controls) */}
+          <div
+            className="absolute inset-0 z-0"
+            onPointerDown={(e) => {
+              // only main button / touch
+              if (e.pointerType === "mouse" && e.button !== 0) return;
+              setHoldPause(true);
+            }}
+            onPointerUp={() => setHoldPause(false)}
+            onPointerCancel={() => setHoldPause(false)}
+            onPointerLeave={() => setHoldPause(false)}
+          />
           {/* Progress bars */}
           <div className="absolute top-2 left-2 right-2 z-20 flex gap-1">
             {currentUser.items.map((_, i) => (
