@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart, Send, X } from "lucide-react";
 import { useStories, type StoryUser } from "@/context/StoriesContext";
+import { toast } from "sonner";
 
 type Props = {
   open: boolean;
@@ -18,6 +19,8 @@ export const StoryViewer = ({ open, onOpenChange, startUserId }: Props) => {
   const [userIdx, setUserIdx] = useState(0);
   const [itemIdx, setItemIdx] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [reply, setReply] = useState("");
+  const [inputFocused, setInputFocused] = useState(false);
   const rafRef = useRef<number>();
   const startRef = useRef<number>(0);
   const pausedRef = useRef(false);
@@ -28,6 +31,7 @@ export const StoryViewer = ({ open, onOpenChange, startUserId }: Props) => {
     setUserIdx(idx >= 0 ? idx : 0);
     setItemIdx(0);
     setProgress(0);
+    setReply("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, startUserId]);
 
@@ -152,16 +156,65 @@ export const StoryViewer = ({ open, onOpenChange, startUserId }: Props) => {
           {/* Nav zones */}
           <button
             onClick={prev}
-            className="absolute left-0 top-0 bottom-0 w-1/3 z-10 flex items-center justify-start pl-2 text-white/0 hover:text-white/70"
+            className="absolute left-0 top-0 bottom-0 w-1/4 z-10 flex items-center justify-start pl-2 text-white/0 hover:text-white/70"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
           <button
             onClick={next}
-            className="absolute right-0 top-0 bottom-0 w-1/3 z-10 flex items-center justify-end pr-2 text-white/0 hover:text-white/70"
+            className="absolute right-0 top-0 bottom-0 w-1/4 z-10 flex items-center justify-end pr-2 text-white/0 hover:text-white/70"
           >
             <ChevronRight className="w-6 h-6" />
           </button>
+
+          {/* Reply bar */}
+          {!currentUser.isMe && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const text = reply.trim();
+                if (!text) return;
+                toast.success(`Ответ отправлен ${currentUser.name}`, { description: text });
+                setReply("");
+                (document.activeElement as HTMLElement | null)?.blur?.();
+              }}
+              className="absolute bottom-0 left-0 right-0 z-30 p-3 flex items-center gap-2 bg-gradient-to-t from-black/70 to-transparent"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <input
+                type="text"
+                value={reply}
+                onChange={(e) => setReply(e.target.value)}
+                onFocus={() => {
+                  setInputFocused(true);
+                  pausedRef.current = true;
+                }}
+                onBlur={() => {
+                  setInputFocused(false);
+                  pausedRef.current = false;
+                }}
+                placeholder={`Ответить ${currentUser.name}…`}
+                className="flex-1 h-10 px-4 rounded-full bg-white/10 border border-white/20 text-white text-sm placeholder:text-white/60 outline-none focus:border-white/60"
+              />
+              <button
+                type="button"
+                onClick={() => toast.success(`Вы отправили ❤️ ${currentUser.name}`)}
+                className="w-10 h-10 rounded-full flex items-center justify-center text-white hover:bg-white/10"
+                aria-label="Лайк"
+              >
+                <Heart className="w-5 h-5" />
+              </button>
+              {reply.trim() && (
+                <button
+                  type="submit"
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-white bg-primary hover:opacity-90"
+                  aria-label="Отправить"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              )}
+            </form>
+          )}
         </div>
       </DialogContent>
     </Dialog>
