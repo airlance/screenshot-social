@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart, Send, X } from "lucide-react";
 import { useStories, type StoryUser } from "@/context/StoriesContext";
+import { toast } from "sonner";
 
 type Props = {
   open: boolean;
@@ -18,6 +19,8 @@ export const StoryViewer = ({ open, onOpenChange, startUserId }: Props) => {
   const [userIdx, setUserIdx] = useState(0);
   const [itemIdx, setItemIdx] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [reply, setReply] = useState("");
+  const [inputFocused, setInputFocused] = useState(false);
   const rafRef = useRef<number>();
   const startRef = useRef<number>(0);
   const pausedRef = useRef(false);
