@@ -1,38 +1,14 @@
+import { useState } from "react";
 import { Plus } from "lucide-react";
-import avatarMe from "@/assets/avatar-me.jpg";
-import avatar1 from "@/assets/avatar-1.jpg";
-import avatar2 from "@/assets/avatar-2.jpg";
-import avatar3 from "@/assets/avatar-3.jpg";
-import avatar4 from "@/assets/avatar-4.jpg";
-import avatar5 from "@/assets/avatar-5.jpg";
-import avatar6 from "@/assets/avatar-6.jpg";
-import avatar7 from "@/assets/avatar-7.jpg";
+import { useStories } from "@/context/StoriesContext";
+import { CreateStoryModal } from "./CreateStoryModal";
+import { StoryViewer } from "./StoryViewer";
 
-type Story = {
-  name: string;
-  avatar: string;
-  seen?: boolean;
-};
-
-const stories: Story[] = [
-  { name: "Skylar R.", avatar: avatar1 },
-  { name: "Mira D.", avatar: avatar2 },
-  { name: "Nolan M.", avatar: avatar3 },
-  { name: "Leah C.", avatar: avatar4 },
-  { name: "Ethan W.", avatar: avatar5 },
-  { name: "Mamie C.", avatar: avatar6 },
-  { name: "Evan W.", avatar: avatar7, seen: true },
-  { name: "Nannie W.", avatar: avatar1, seen: true },
-  { name: "Vicente C.", avatar: avatar2, seen: true },
-];
-
-const StoryRing = ({ children, seen }: { children: React.ReactNode; seen?: boolean }) => (
+const StoryRing = ({ children, seen, isMe }: { children: React.ReactNode; seen?: boolean; isMe?: boolean }) => (
   <div
     className="p-[2.5px] rounded-full"
     style={{
-      background: seen
-        ? "hsl(var(--border))"
-        : "var(--gradient-ig-ring)",
+      background: isMe ? "hsl(var(--border))" : seen ? "hsl(var(--border))" : "var(--gradient-ig-ring)",
     }}
   >
     <div className="p-[2px] rounded-full bg-card">{children}</div>
@@ -40,49 +16,77 @@ const StoryRing = ({ children, seen }: { children: React.ReactNode; seen?: boole
 );
 
 export const Stories = () => {
+  const { users } = useStories();
+  const [createOpen, setCreateOpen] = useState(false);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [activeUserId, setActiveUserId] = useState<string | null>(null);
+
+  const me = users.find((u) => u.isMe)!;
+  const others = users.filter((u) => !u.isMe && u.items.length > 0);
+
+  const openViewer = (userId: string) => {
+    setActiveUserId(userId);
+    setViewerOpen(true);
+  };
+
   return (
     <div className="vk-card px-4 py-4">
       <div className="flex gap-4 overflow-x-auto scrollbar-none">
         {/* My story */}
-        <button className="flex flex-col items-center gap-1.5 shrink-0 group">
+        <button
+          onClick={() => (me.items.length > 0 ? openViewer("me") : setCreateOpen(true))}
+          className="flex flex-col items-center gap-1.5 shrink-0 group"
+        >
           <div className="relative">
-            <div className="p-[2.5px] rounded-full bg-border">
-              <div className="p-[2px] rounded-full bg-card">
-                <img
-                  src={avatarMe}
-                  alt="My story"
-                  width={64}
-                  height={64}
-                  loading="lazy"
-                  className="w-16 h-16 rounded-full object-cover"
-                />
-              </div>
-            </div>
-            <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-primary border-2 border-card flex items-center justify-center">
+            <StoryRing isMe={me.items.length === 0} seen={false}>
+              <img
+                src={me.avatar}
+                alt="My story"
+                width={64}
+                height={64}
+                loading="lazy"
+                className="w-16 h-16 rounded-full object-cover"
+              />
+            </StoryRing>
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                setCreateOpen(true);
+              }}
+              role="button"
+              className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-primary border-2 border-card flex items-center justify-center cursor-pointer"
+            >
               <Plus className="w-3 h-3 text-primary-foreground" strokeWidth={3} />
             </div>
           </div>
           <span className="text-xs text-foreground max-w-[72px] truncate">Моя история</span>
         </button>
 
-        {stories.map((story, i) => (
-          <button key={i} className="flex flex-col items-center gap-1.5 shrink-0 group">
-            <StoryRing seen={story.seen}>
+        {others.map((u) => (
+          <button
+            key={u.id}
+            onClick={() => openViewer(u.id)}
+            className="flex flex-col items-center gap-1.5 shrink-0 group"
+          >
+            <StoryRing seen={u.seen}>
               <img
-                src={story.avatar}
-                alt={story.name}
+                src={u.avatar}
+                alt={u.name}
                 width={64}
                 height={64}
                 loading="lazy"
                 className="w-16 h-16 rounded-full object-cover transition-transform group-hover:scale-105"
               />
             </StoryRing>
-            <span className={`text-xs max-w-[72px] truncate ${story.seen ? "text-muted-foreground" : "text-foreground"}`}>
-              {story.name}
+            <span className={`text-xs max-w-[72px] truncate ${u.seen ? "text-muted-foreground" : "text-foreground"}`}>
+              {u.name}
             </span>
           </button>
         ))}
       </div>
+
+      <CreateStoryModal open={createOpen} onOpenChange={setCreateOpen} />
+      <StoryViewer open={viewerOpen} onOpenChange={setViewerOpen} startUserId={activeUserId} />
     </div>
   );
 };

@@ -24,6 +24,7 @@ import ArticleEditor from "./pages/ArticleEditor.tsx";
 import SimplePage from "./pages/SimplePage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { PlayerProvider } from "./context/PlayerContext";
+import { StoriesProvider } from "./context/StoriesContext";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <PlayerProvider>
+      <StoriesProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
@@ -59,6 +61,7 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
+      </StoriesProvider>
       </PlayerProvider>
     </TooltipProvider>
   </QueryClientProvider>
