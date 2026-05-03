@@ -183,6 +183,7 @@ const Photos = () => {
             onUpload={() => triggerFileSelect(openAlbum.id)}
             onEdit={() => setEditAlbumId(openAlbum.id)}
             onDelete={() => handleDeleteAlbum(openAlbum.id)}
+            onOpenPhoto={setViewerSrc}
           />
         ) : (
           <>
