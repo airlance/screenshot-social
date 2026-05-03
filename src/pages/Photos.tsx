@@ -501,12 +501,14 @@ const AlbumView = ({
   onUpload,
   onEdit,
   onDelete,
+  onOpenPhoto,
 }: {
   album: Album;
   onBack: () => void;
   onUpload: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onOpenPhoto: (src: string) => void;
 }) => (
   <>
     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
