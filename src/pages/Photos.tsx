@@ -369,7 +369,7 @@ const PhotoTile = ({ src, onOpen }: { src: string; onOpen?: () => void }) => (
     />
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="absolute top-2 right-2 w-8 h-8 rounded-full bg-background/70 backdrop-blur flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+        <button onClick={(e) => e.stopPropagation()} className="absolute top-2 right-2 w-8 h-8 rounded-full bg-background/70 backdrop-blur flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           <MoreHorizontal className="w-4 h-4" />
         </button>
       </DropdownMenuTrigger>
