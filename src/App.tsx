@@ -22,6 +22,7 @@ import Games from "./pages/Games.tsx";
 import Bookmarks from "./pages/Bookmarks.tsx";
 import ArticleEditor from "./pages/ArticleEditor.tsx";
 import SimplePage from "./pages/SimplePage.tsx";
+import Services from "./pages/Services.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { PlayerProvider } from "./context/PlayerContext";
 import { StoriesProvider } from "./context/StoriesContext";
