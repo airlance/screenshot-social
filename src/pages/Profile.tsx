@@ -131,6 +131,10 @@ const Profile = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("photos");
   const [feedSort, setFeedSort] = useState<FeedSort>("date");
+  const { users } = useStories();
+  const myStories = users.find((u) => u.isMe)?.items ?? [];
+  const [createStoryOpen, setCreateStoryOpen] = useState(false);
+  const [storyViewerOpen, setStoryViewerOpen] = useState(false);
 
   const sortedPosts = useMemo(() => {
     const arr = [...userPosts];
