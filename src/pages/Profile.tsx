@@ -514,6 +514,8 @@ const Profile = () => {
       </section>
 
       {renderAvatarDialog()}
+      <CreateStoryModal open={createStoryOpen} onOpenChange={setCreateStoryOpen} />
+      <StoryViewer open={storyViewerOpen} onOpenChange={setStoryViewerOpen} startUserId="me" />
     </AppLayout>
   );
 };
