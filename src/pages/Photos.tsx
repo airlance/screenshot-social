@@ -37,6 +37,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { PhotoViewer } from "@/components/feed/PhotoViewer";
 
 import photo1 from "@/assets/photo-1.jpg";
 import photo2 from "@/assets/post-photo-1.jpg";
