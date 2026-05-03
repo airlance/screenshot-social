@@ -343,7 +343,7 @@ const Photos = () => {
 
 // ===== Subcomponents =====
 
-const PhotosGrid = ({ photos }: { photos: string[] }) => {
+const PhotosGrid = ({ photos, onOpen }: { photos: string[]; onOpen: (src: string) => void }) => {
   if (photos.length === 0) {
     return <EmptyState icon={<ImageIcon className="w-8 h-8" />} text="У вас ещё нет фото" />;
   }
@@ -352,15 +352,15 @@ const PhotosGrid = ({ photos }: { photos: string[] }) => {
       <div className="text-xs font-semibold text-muted-foreground mb-3">2026</div>
       <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2">
         {photos.map((src, i) => (
-          <PhotoTile key={i} src={src} />
+          <PhotoTile key={i} src={src} onOpen={() => onOpen(src)} />
         ))}
       </div>
     </>
   );
 };
 
-const PhotoTile = ({ src }: { src: string }) => (
-  <div className="relative group">
+const PhotoTile = ({ src, onOpen }: { src: string; onOpen?: () => void }) => (
+  <div className="relative group cursor-pointer" onClick={onOpen}>
     <img
       src={src}
       alt="photo"
