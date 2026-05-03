@@ -37,6 +37,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { PhotoViewer } from "@/components/feed/PhotoViewer";
 
 import photo1 from "@/assets/photo-1.jpg";
 import photo2 from "@/assets/post-photo-1.jpg";
@@ -84,6 +85,7 @@ const Photos = () => {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [uploadTarget, setUploadTarget] = useState<string | null>(null); // album id or null = loose
   const [pendingFiles, setPendingFiles] = useState<string[]>([]);
+  const [viewerSrc, setViewerSrc] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -181,6 +183,7 @@ const Photos = () => {
             onUpload={() => triggerFileSelect(openAlbum.id)}
             onEdit={() => setEditAlbumId(openAlbum.id)}
             onDelete={() => handleDeleteAlbum(openAlbum.id)}
+            onOpenPhoto={setViewerSrc}
           />
         ) : (
           <>
@@ -249,7 +252,7 @@ const Photos = () => {
             </div>
 
             {tab === "photos" ? (
-              <PhotosGrid photos={allPhotos} />
+              <PhotosGrid photos={allPhotos} onOpen={setViewerSrc} />
             ) : (
               <AlbumsGrid
                 albums={albums}
@@ -334,13 +337,14 @@ const Photos = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <PhotoViewer open={!!viewerSrc} onOpenChange={(o) => !o && setViewerSrc(null)} src={viewerSrc} />
     </AppLayout>
   );
 };
 
 // ===== Subcomponents =====
 
-const PhotosGrid = ({ photos }: { photos: string[] }) => {
+const PhotosGrid = ({ photos, onOpen }: { photos: string[]; onOpen: (src: string) => void }) => {
   if (photos.length === 0) {
     return <EmptyState icon={<ImageIcon className="w-8 h-8" />} text="У вас ещё нет фото" />;
   }
@@ -349,15 +353,15 @@ const PhotosGrid = ({ photos }: { photos: string[] }) => {
       <div className="text-xs font-semibold text-muted-foreground mb-3">2026</div>
       <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2">
         {photos.map((src, i) => (
-          <PhotoTile key={i} src={src} />
+          <PhotoTile key={i} src={src} onOpen={() => onOpen(src)} />
         ))}
       </div>
     </>
   );
 };
 
-const PhotoTile = ({ src }: { src: string }) => (
-  <div className="relative group">
+const PhotoTile = ({ src, onOpen }: { src: string; onOpen?: () => void }) => (
+  <div className="relative group cursor-pointer" onClick={onOpen}>
     <img
       src={src}
       alt="photo"
@@ -366,7 +370,7 @@ const PhotoTile = ({ src }: { src: string }) => (
     />
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="absolute top-2 right-2 w-8 h-8 rounded-full bg-background/70 backdrop-blur flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+        <button onClick={(e) => e.stopPropagation()} className="absolute top-2 right-2 w-8 h-8 rounded-full bg-background/70 backdrop-blur flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           <MoreHorizontal className="w-4 h-4" />
         </button>
       </DropdownMenuTrigger>
@@ -498,12 +502,14 @@ const AlbumView = ({
   onUpload,
   onEdit,
   onDelete,
+  onOpenPhoto,
 }: {
   album: Album;
   onBack: () => void;
   onUpload: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onOpenPhoto: (src: string) => void;
 }) => (
   <>
     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
@@ -561,7 +567,7 @@ const AlbumView = ({
     ) : (
       <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2">
         {album.photos.map((src, i) => (
-          <PhotoTile key={i} src={src} />
+          <PhotoTile key={i} src={src} onOpen={() => onOpenPhoto(src)} />
         ))}
       </div>
     )}
