@@ -251,7 +251,7 @@ const Photos = () => {
             </div>
 
             {tab === "photos" ? (
-              <PhotosGrid photos={allPhotos} />
+              <PhotosGrid photos={allPhotos} onOpen={setViewerSrc} />
             ) : (
               <AlbumsGrid
                 albums={albums}
