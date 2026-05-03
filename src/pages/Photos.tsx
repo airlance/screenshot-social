@@ -566,7 +566,7 @@ const AlbumView = ({
     ) : (
       <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2">
         {album.photos.map((src, i) => (
-          <PhotoTile key={i} src={src} />
+          <PhotoTile key={i} src={src} onOpen={() => onOpenPhoto(src)} />
         ))}
       </div>
     )}
