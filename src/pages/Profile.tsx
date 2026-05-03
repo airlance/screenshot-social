@@ -325,6 +325,50 @@ const Profile = () => {
       </section>
 
       <section className="flex flex-col gap-3">
+          <div className="vk-card overflow-hidden rounded-xl p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <div className="font-semibold">Мои истории</div>
+              <span className="text-xs text-muted-foreground">{myStories.length}</span>
+            </div>
+            <div className="flex gap-3 overflow-x-auto scrollbar-none">
+              <button
+                onClick={() => setCreateStoryOpen(true)}
+                className="flex h-28 w-20 shrink-0 flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-secondary/40 text-xs font-semibold text-muted-foreground transition-colors hover:bg-secondary"
+              >
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground"><Plus className="h-4 w-4" strokeWidth={3} /></span>
+                Добавить
+              </button>
+              {myStories.length === 0 ? (
+                <div className="flex flex-1 items-center px-2 text-sm text-muted-foreground">
+                  У вас пока нет историй. Создайте первую — она появится здесь.
+                </div>
+              ) : (
+                myStories
+                  .slice()
+                  .sort((a, b) => b.createdAt - a.createdAt)
+                  .map((s) => (
+                    <button
+                      key={s.id}
+                      onClick={() => setStoryViewerOpen(true)}
+                      className="relative h-28 w-20 shrink-0 overflow-hidden rounded-xl bg-secondary"
+                      aria-label="Открыть историю"
+                    >
+                      {s.image ? (
+                        <img src={s.image} alt="История" className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center p-1.5 text-center text-[10px] font-semibold leading-tight text-white" style={{ background: s.background }}>
+                          {s.text}
+                        </div>
+                      )}
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-1.5 py-1 text-[10px] font-semibold text-white">
+                        {new Date(s.createdAt).toLocaleDateString("ru-RU", { day: "2-digit", month: "short" })}
+                      </div>
+                    </button>
+                  ))
+              )}
+            </div>
+          </div>
+
           <div className="vk-card overflow-hidden rounded-xl p-3">
             <div className="mb-3 flex gap-1 overflow-x-auto scrollbar-none">
               {tabs.map(({ key, label, icon: Icon }) => {
