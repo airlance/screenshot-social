@@ -337,6 +337,7 @@ const Photos = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <PhotoViewer open={!!viewerSrc} onOpenChange={(o) => !o && setViewerSrc(null)} src={viewerSrc} />
     </AppLayout>
   );
 };
