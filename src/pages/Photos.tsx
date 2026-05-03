@@ -85,6 +85,7 @@ const Photos = () => {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [uploadTarget, setUploadTarget] = useState<string | null>(null); // album id or null = loose
   const [pendingFiles, setPendingFiles] = useState<string[]>([]);
+  const [viewerSrc, setViewerSrc] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
