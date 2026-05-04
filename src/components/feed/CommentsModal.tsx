@@ -159,16 +159,13 @@ export const CommentsModal = ({ open, onOpenChange, post }: Props) => {
             <button className="w-9 h-9 rounded-full hover:bg-secondary flex items-center justify-center text-muted-foreground transition-colors">
               <Smile className="w-5 h-5" />
             </button>
-            <input
+            <MentionInput
               ref={inputRef}
               value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSend();
-                if (e.key === "Escape" && replyTo) setReplyTo(null);
-              }}
-              placeholder={replyTo ? `Ответ ${replyTo.author.name}...` : "Написать комментарий..."}
-              className="flex-1 h-10 bg-secondary/40 rounded-full px-4 text-sm outline-none focus:bg-secondary/70 transition-colors placeholder:text-muted-foreground"
+              onChange={setDraft}
+              onSubmit={handleSend}
+              placeholder={replyTo ? `Ответ ${replyTo.author.name}...` : "Написать комментарий... @ для упоминания"}
+              className="flex-1"
             />
             <button
               onClick={handleSend}
