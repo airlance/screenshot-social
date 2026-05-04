@@ -112,7 +112,7 @@ export const CommentsModal = ({ open, onOpenChange, post }: Props) => {
                   <div className="flex-1 min-w-0">
                     <div className="bg-secondary/50 rounded-2xl px-3 py-2">
                       <div className="text-xs font-semibold mb-0.5">{c.author.name}</div>
-                      <div className="text-sm leading-relaxed break-words">{c.text}</div>
+                      <div className="text-sm leading-relaxed break-words">{renderWithMentions(c.text)}</div>
                     </div>
                     <div className="flex items-center gap-3 mt-1 px-3 text-xs text-muted-foreground">
                       <span>{c.time}</span>
