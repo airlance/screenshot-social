@@ -148,6 +148,8 @@ const UserProfile = () => {
     [id],
   );
 
+  const userPosts = useMemo<Post[]>(() => buildUserPosts(profile), [profile]);
+
   const [requestSent, setRequestSent] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
   const [blocked, setBlocked] = useState(false);
