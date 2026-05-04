@@ -352,11 +352,11 @@ const UserProfile = () => {
             </button>
           </div>
         ) : (
-          <div className="vk-card p-4">
-            <div className="font-semibold mb-3">Записи</div>
-            <p className="text-sm text-muted-foreground">
-              Здесь будут отображаться записи пользователя.
-            </p>
+          <div className="flex flex-col gap-3">
+            <div className="px-1 text-sm font-semibold text-muted-foreground">Записи</div>
+            {userPosts.map((p) => (
+              <PostCard key={p.id} post={p} />
+            ))}
           </div>
         )}
 
