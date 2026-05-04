@@ -102,7 +102,7 @@ export const PhotoViewer = ({ open, onOpenChange, src }: Props) => {
                     <div className="min-w-0 flex-1">
                       <div className="rounded-2xl bg-secondary/70 px-3 py-2">
                         <div className="text-xs font-semibold">{c.author.name}</div>
-                        <div className="text-sm break-words">{c.text}</div>
+                        <div className="text-sm break-words">{renderWithMentions(c.text)}</div>
                       </div>
                       <div className="mt-1 flex items-center gap-3 px-1 text-xs text-muted-foreground">
                         <span>{c.time}</span>
