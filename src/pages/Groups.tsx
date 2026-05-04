@@ -1,5 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { PostCard } from "@/components/feed/PostCard";
+import type { Post } from "@/components/feed/types";
 import {
   BadgeCheck,
   Bell,
@@ -95,7 +98,44 @@ const forYou = [
 const Groups = () => {
   const [activeTab, setActiveTab] = useState("video");
   const [selectedCommunity, setSelectedCommunity] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
   const featured = useMemo(() => [postMusicCover, avatarMe, postPhoto2], []);
+
+  // Автооткрытие сообщества по query (?id=hanna и т.п.)
+  useEffect(() => {
+    if (searchParams.get("id")) setSelectedCommunity(true);
+  }, [searchParams]);
+
+  const closeCommunity = () => {
+    setSelectedCommunity(false);
+    if (searchParams.has("id")) {
+      const next = new URLSearchParams(searchParams);
+      next.delete("id");
+      setSearchParams(next, { replace: true });
+    }
+  };
+
+  const communityPosts: Post[] = useMemo(
+    () => [
+      {
+        id: "hanna-post-1",
+        author: { id: "hanna", kind: "group", name: "ХАННА", avatar: postMusicCover, subtitle: "Сообщество · только что" },
+        time: "только что",
+        text: "Премьера трека «Русская красавица» уже сегодня вечером! Кто ждёт?",
+        media: [{ type: "photo", images: [postPhoto2] }],
+        stats: { likes: 12400, comments: 842, shares: 318 },
+      },
+      {
+        id: "hanna-post-2",
+        author: { id: "hanna", kind: "group", name: "ХАННА", avatar: postMusicCover, subtitle: "Сообщество · вчера" },
+        time: "вчера",
+        text: "Backstage съёмок нового клипа 🎬",
+        media: [{ type: "photo", images: [postPhoto3, postPhoto4] }],
+        stats: { likes: 9800, comments: 410, shares: 122 },
+      },
+    ],
+    [],
+  );
 
   const renderTabContent = () => {
     if (activeTab === "clips") {
