@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { formatCount, type Comment, type Post } from "./types";
+import { MentionInput, renderWithMentions, type MentionInputHandle } from "./MentionInput";
 
 interface Props {
   open: boolean;
@@ -22,7 +23,7 @@ export const CommentsModal = ({ open, onOpenChange, post }: Props) => {
   const [draft, setDraft] = useState("");
   const [sort, setSort] = useState<SortMode>("popular");
   const [replyTo, setReplyTo] = useState<LocalComment | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<MentionInputHandle>(null);
 
   const sorted = useMemo(() => {
     const list = [...comments];
@@ -111,7 +112,7 @@ export const CommentsModal = ({ open, onOpenChange, post }: Props) => {
                   <div className="flex-1 min-w-0">
                     <div className="bg-secondary/50 rounded-2xl px-3 py-2">
                       <div className="text-xs font-semibold mb-0.5">{c.author.name}</div>
-                      <div className="text-sm leading-relaxed break-words">{c.text}</div>
+                      <div className="text-sm leading-relaxed break-words">{renderWithMentions(c.text)}</div>
                     </div>
                     <div className="flex items-center gap-3 mt-1 px-3 text-xs text-muted-foreground">
                       <span>{c.time}</span>
@@ -158,16 +159,13 @@ export const CommentsModal = ({ open, onOpenChange, post }: Props) => {
             <button className="w-9 h-9 rounded-full hover:bg-secondary flex items-center justify-center text-muted-foreground transition-colors">
               <Smile className="w-5 h-5" />
             </button>
-            <input
+            <MentionInput
               ref={inputRef}
               value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSend();
-                if (e.key === "Escape" && replyTo) setReplyTo(null);
-              }}
-              placeholder={replyTo ? `Ответ ${replyTo.author.name}...` : "Написать комментарий..."}
-              className="flex-1 h-10 bg-secondary/40 rounded-full px-4 text-sm outline-none focus:bg-secondary/70 transition-colors placeholder:text-muted-foreground"
+              onChange={setDraft}
+              onSubmit={handleSend}
+              placeholder={replyTo ? `Ответ ${replyTo.author.name}...` : "Написать комментарий... @ для упоминания"}
+              className="flex-1"
             />
             <button
               onClick={handleSend}

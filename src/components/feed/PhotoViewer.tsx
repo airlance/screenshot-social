@@ -4,6 +4,7 @@ import { Heart, Send, X } from "lucide-react";
 import avatarMe from "@/assets/avatar-me.jpg";
 import avatar1 from "@/assets/avatar-1.jpg";
 import avatar2 from "@/assets/avatar-2.jpg";
+import { MentionInput, renderWithMentions, type MentionInputHandle } from "./MentionInput";
 
 export type PhotoComment = {
   id: string;
@@ -32,7 +33,7 @@ type Props = {
 export const PhotoViewer = ({ open, onOpenChange, src }: Props) => {
   const [store, setStore] = useState<Record<string, PhotoComment[]>>({});
   const [draft, setDraft] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<MentionInputHandle>(null);
 
   useEffect(() => {
     if (open && src && !store[src]) {
@@ -101,7 +102,7 @@ export const PhotoViewer = ({ open, onOpenChange, src }: Props) => {
                     <div className="min-w-0 flex-1">
                       <div className="rounded-2xl bg-secondary/70 px-3 py-2">
                         <div className="text-xs font-semibold">{c.author.name}</div>
-                        <div className="text-sm break-words">{c.text}</div>
+                        <div className="text-sm break-words">{renderWithMentions(c.text)}</div>
                       </div>
                       <div className="mt-1 flex items-center gap-3 px-1 text-xs text-muted-foreground">
                         <span>{c.time}</span>
@@ -121,12 +122,11 @@ export const PhotoViewer = ({ open, onOpenChange, src }: Props) => {
             </div>
             <form onSubmit={submit} className="p-3 border-t border-border flex items-center gap-2">
               <img src={avatarMe} alt="" className="w-8 h-8 rounded-full object-cover" />
-              <input
+              <MentionInput
                 ref={inputRef}
                 value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                placeholder="Написать комментарий…"
-                className="flex-1 h-10 px-3 rounded-full bg-secondary text-sm outline-none focus:ring-2 focus:ring-primary/40"
+                onChange={setDraft}
+                placeholder="Написать комментарий…  Используйте @ для упоминания"
               />
               <button
                 type="submit"
