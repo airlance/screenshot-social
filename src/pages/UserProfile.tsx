@@ -27,6 +27,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { PostCard } from "@/components/feed/PostCard";
+import type { Post } from "@/components/feed/types";
 
 import avatar1 from "@/assets/avatar-1.jpg";
 import avatar2 from "@/assets/avatar-2.jpg";
@@ -35,6 +37,9 @@ import avatar4 from "@/assets/avatar-4.jpg";
 import avatar5 from "@/assets/avatar-5.jpg";
 import avatar6 from "@/assets/avatar-6.jpg";
 import avatar7 from "@/assets/avatar-7.jpg";
+import postPhoto1 from "@/assets/post-photo-1.jpg";
+import postPhoto2 from "@/assets/post-photo-2.jpg";
+import postPhoto3 from "@/assets/post-photo-3.jpg";
 
 type ProfileData = {
   id: string;
