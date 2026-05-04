@@ -28,7 +28,7 @@ const wave = (n: number, seed = 1) =>
 const posts: Post[] = [
   {
     id: "1",
-    author: { name: "Евгения Шабаева", avatar: avatar2, subtitle: "5 д назад · Москва" },
+    author: { id: "evgenia-shabaeva", kind: "user", name: "Евгения Шабаева", avatar: avatar2, subtitle: "5 д назад · Москва" },
     time: "5 д",
     text: "74-летняя Алла Пугачёва появилась на концерте группы «Машина времени», вызвав бурное обсуждение в сети. Она вышла на сцену, чтобы поддержать музыкантов, когда звучала фонограмма её песни «Я сюда ещё вернусь».",
     media: [{ type: "photo", images: [post1, photo1, photo4] }],
@@ -41,7 +41,7 @@ const posts: Post[] = [
   },
   {
     id: "2",
-    author: { name: "Артём Левин", avatar: avatar1, subtitle: "Только что" },
+    author: { id: "artem-levin", kind: "user", name: "Артём Левин", avatar: avatar1, subtitle: "Только что" },
     time: "только что",
     text: "Записал короткое голосовое — расскажу про новый альбом 🎙️",
     media: [{ type: "audio", audio: { kind: "voice", duration: "0:34", waveform: wave(36, 2) } }],
@@ -49,7 +49,7 @@ const posts: Post[] = [
   },
   {
     id: "3",
-    author: { name: "Travel & Photo", avatar: avatar3, subtitle: "Сообщество · 2 ч" },
+    author: { id: "travel-photo", kind: "group", name: "Travel & Photo", avatar: avatar3, subtitle: "Сообщество · 2 ч" },
     time: "2 ч",
     text: "Фото недели — мы собрали лучшие снимки нашего сообщества. Какой бы вы поставили на обложку?",
     media: [{ type: "photo", images: [photo1, photo2, photo3, photo4] }],
@@ -58,7 +58,7 @@ const posts: Post[] = [
   },
   {
     id: "4",
-    author: { name: "Lo-Fi Beats", avatar: avatar4, subtitle: "Музыкальная подборка" },
+    author: { id: "lo-fi-beats", kind: "group", name: "Lo-Fi Beats", avatar: avatar4, subtitle: "Музыкальная подборка" },
     time: "вчера",
     text: "Подборка треков для концентрации — слушайте, пока работаете 🎧",
     media: [
@@ -76,7 +76,7 @@ const posts: Post[] = [
   },
   {
     id: "5",
-    author: { name: "Кинохроника", avatar: avatar5, subtitle: "12 ч назад" },
+    author: { id: "kinohronika", kind: "group", name: "Кинохроника", avatar: avatar5, subtitle: "12 ч назад" },
     time: "12 ч",
     text: "Свежий трейлер от Christopher Nolan — обсуждаем в комментариях.",
     media: [
@@ -89,7 +89,7 @@ const posts: Post[] = [
   },
   {
     id: "6",
-    author: { name: "Мобильная фотография", avatar: avatar6, subtitle: "Сообщество" },
+    author: { id: "mobile-photo", kind: "group", name: "Мобильная фотография", avatar: avatar6, subtitle: "Сообщество" },
     time: "3 ч",
     text: "Один кадр — одна история. Сегодняшний победитель конкурса.",
     media: [{ type: "photo", images: [photo3] }],
@@ -97,7 +97,7 @@ const posts: Post[] = [
   },
   {
     id: "7",
-    author: { name: "Шеф-повар Дима", avatar: avatar7, subtitle: "Кулинарный блог" },
+    author: { id: "chef-dima", kind: "user", name: "Шеф-повар Дима", avatar: avatar7, subtitle: "Кулинарный блог" },
     time: "вчера",
     text: "Рецепт идеального латте — снял короткое видео из своего кафе ☕",
     media: [
@@ -110,7 +110,7 @@ const posts: Post[] = [
   },
   {
     id: "8",
-    author: { name: "Анна Морозова", avatar: avatar2, subtitle: "Личный блог" },
+    author: { id: "anna-morozova", kind: "user", name: "Анна Морозова", avatar: avatar2, subtitle: "Личный блог" },
     time: "2 д",
     text: "Иногда лучший пост — это просто текст. Сегодня хочется поделиться мыслью: не бойтесь начинать с малого. Любой большой проект начинался с одной маленькой идеи и одного решительного шага.",
     stats: { likes: 4200, comments: 215, shares: 67 },
@@ -118,10 +118,14 @@ const posts: Post[] = [
 ];
 
 const Feed = () => {
+  const { reposts } = useReposts();
   return (
     <AppLayout right={<><FeedFilters /><GameAdCard /></>}>
       <Stories />
       <CreatePost />
+      {reposts.map((p) => (
+        <PostCard key={p.id} post={p} />
+      ))}
       {posts.map((p) => (
         <PostCard key={p.id} post={p} />
       ))}
