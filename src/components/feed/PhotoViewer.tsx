@@ -122,12 +122,11 @@ export const PhotoViewer = ({ open, onOpenChange, src }: Props) => {
             </div>
             <form onSubmit={submit} className="p-3 border-t border-border flex items-center gap-2">
               <img src={avatarMe} alt="" className="w-8 h-8 rounded-full object-cover" />
-              <input
+              <MentionInput
                 ref={inputRef}
                 value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                placeholder="Написать комментарий…"
-                className="flex-1 h-10 px-3 rounded-full bg-secondary text-sm outline-none focus:ring-2 focus:ring-primary/40"
+                onChange={setDraft}
+                placeholder="Написать комментарий…  Используйте @ для упоминания"
               />
               <button
                 type="submit"
