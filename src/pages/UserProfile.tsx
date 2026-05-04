@@ -138,6 +138,31 @@ const hash = (s: string) => {
   return h;
 };
 
+const PROFILE_PHOTOS = [postPhoto1, postPhoto2, postPhoto3];
+
+const buildUserPosts = (p: ProfileData): Post[] => {
+  const author = { id: p.id, kind: "user" as const, name: p.name, avatar: p.avatar };
+  const idx = Math.abs(hash(p.id));
+  const photo = PROFILE_PHOTOS[idx % PROFILE_PHOTOS.length];
+  return [
+    {
+      id: `${p.id}-post-1`,
+      author: { ...author, subtitle: "только что" },
+      time: "только что",
+      text: `Привет! Я ${p.name.split(" ")[0]}. Делюсь тем, что вдохновляет в этом сезоне.`,
+      media: [{ type: "photo", images: [photo] }],
+      stats: { likes: 124 + (idx % 80), comments: 8 + (idx % 12), shares: 3 + (idx % 5) },
+    },
+    {
+      id: `${p.id}-post-2`,
+      author: { ...author, subtitle: "вчера" },
+      time: "вчера",
+      text: p.status,
+      stats: { likes: 56 + (idx % 40), comments: 4, shares: 1 },
+    },
+  ];
+};
+
 const UserProfile = () => {
   const { id = "mark-roberts" } = useParams();
   const navigate = useNavigate();
