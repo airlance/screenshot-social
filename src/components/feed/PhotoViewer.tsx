@@ -4,6 +4,7 @@ import { Heart, Send, X } from "lucide-react";
 import avatarMe from "@/assets/avatar-me.jpg";
 import avatar1 from "@/assets/avatar-1.jpg";
 import avatar2 from "@/assets/avatar-2.jpg";
+import { MentionInput, renderWithMentions, type MentionInputHandle } from "./MentionInput";
 
 export type PhotoComment = {
   id: string;
