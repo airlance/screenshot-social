@@ -23,7 +23,7 @@ export const CommentsModal = ({ open, onOpenChange, post }: Props) => {
   const [draft, setDraft] = useState("");
   const [sort, setSort] = useState<SortMode>("popular");
   const [replyTo, setReplyTo] = useState<LocalComment | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<MentionInputHandle>(null);
 
   const sorted = useMemo(() => {
     const list = [...comments];
