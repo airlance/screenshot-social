@@ -33,7 +33,7 @@ type Props = {
 export const PhotoViewer = ({ open, onOpenChange, src }: Props) => {
   const [store, setStore] = useState<Record<string, PhotoComment[]>>({});
   const [draft, setDraft] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<MentionInputHandle>(null);
 
   useEffect(() => {
     if (open && src && !store[src]) {
