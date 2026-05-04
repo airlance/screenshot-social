@@ -27,6 +27,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { PostCard } from "@/components/feed/PostCard";
+import type { Post } from "@/components/feed/types";
 
 import avatar1 from "@/assets/avatar-1.jpg";
 import avatar2 from "@/assets/avatar-2.jpg";
@@ -35,6 +37,9 @@ import avatar4 from "@/assets/avatar-4.jpg";
 import avatar5 from "@/assets/avatar-5.jpg";
 import avatar6 from "@/assets/avatar-6.jpg";
 import avatar7 from "@/assets/avatar-7.jpg";
+import postPhoto1 from "@/assets/post-photo-1.jpg";
+import postPhoto2 from "@/assets/post-photo-2.jpg";
+import postPhoto3 from "@/assets/post-photo-3.jpg";
 
 type ProfileData = {
   id: string;
@@ -133,6 +138,31 @@ const hash = (s: string) => {
   return h;
 };
 
+const PROFILE_PHOTOS = [postPhoto1, postPhoto2, postPhoto3];
+
+const buildUserPosts = (p: ProfileData): Post[] => {
+  const author = { id: p.id, kind: "user" as const, name: p.name, avatar: p.avatar };
+  const idx = Math.abs(hash(p.id));
+  const photo = PROFILE_PHOTOS[idx % PROFILE_PHOTOS.length];
+  return [
+    {
+      id: `${p.id}-post-1`,
+      author: { ...author, subtitle: "только что" },
+      time: "только что",
+      text: `Привет! Я ${p.name.split(" ")[0]}. Делюсь тем, что вдохновляет в этом сезоне.`,
+      media: [{ type: "photo", images: [photo] }],
+      stats: { likes: 124 + (idx % 80), comments: 8 + (idx % 12), shares: 3 + (idx % 5) },
+    },
+    {
+      id: `${p.id}-post-2`,
+      author: { ...author, subtitle: "вчера" },
+      time: "вчера",
+      text: p.status,
+      stats: { likes: 56 + (idx % 40), comments: 4, shares: 1 },
+    },
+  ];
+};
+
 const UserProfile = () => {
   const { id = "mark-roberts" } = useParams();
   const navigate = useNavigate();
@@ -142,6 +172,8 @@ const UserProfile = () => {
     () => PROFILES[id] ?? buildFallback(id),
     [id],
   );
+
+  const userPosts = useMemo<Post[]>(() => buildUserPosts(profile), [profile]);
 
   const [requestSent, setRequestSent] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
@@ -320,11 +352,11 @@ const UserProfile = () => {
             </button>
           </div>
         ) : (
-          <div className="vk-card p-4">
-            <div className="font-semibold mb-3">Записи</div>
-            <p className="text-sm text-muted-foreground">
-              Здесь будут отображаться записи пользователя.
-            </p>
+          <div className="flex flex-col gap-3">
+            <div className="px-1 text-sm font-semibold text-muted-foreground">Записи</div>
+            {userPosts.map((p) => (
+              <PostCard key={p.id} post={p} />
+            ))}
           </div>
         )}
 

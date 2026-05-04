@@ -1,7 +1,12 @@
+export type AuthorKind = "user" | "group";
+
 export type Author = {
   name: string;
   avatar?: string;
   subtitle?: string;
+  /** Идентификатор для перехода на страницу: профиля или сообщества. */
+  id?: string;
+  kind?: AuthorKind;
 };
 
 export type AudioTrack = {
@@ -57,6 +62,10 @@ export type Post = {
   liked?: boolean;
   reposted?: boolean;
   comments?: Comment[];
+  /** Если пост является репостом — здесь оригинальная запись (без своих stats/comments). */
+  repost?: {
+    original: Omit<Post, "repost" | "stats" | "comments">;
+  };
 };
 
 /** Форматирование чисел: 23900 -> "23,9K" */

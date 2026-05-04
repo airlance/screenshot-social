@@ -1,5 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { PostCard } from "@/components/feed/PostCard";
+import type { Post } from "@/components/feed/types";
 import {
   BadgeCheck,
   Bell,
@@ -95,7 +98,44 @@ const forYou = [
 const Groups = () => {
   const [activeTab, setActiveTab] = useState("video");
   const [selectedCommunity, setSelectedCommunity] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
   const featured = useMemo(() => [postMusicCover, avatarMe, postPhoto2], []);
+
+  // Автооткрытие сообщества по query (?id=hanna и т.п.)
+  useEffect(() => {
+    if (searchParams.get("id")) setSelectedCommunity(true);
+  }, [searchParams]);
+
+  const closeCommunity = () => {
+    setSelectedCommunity(false);
+    if (searchParams.has("id")) {
+      const next = new URLSearchParams(searchParams);
+      next.delete("id");
+      setSearchParams(next, { replace: true });
+    }
+  };
+
+  const communityPosts: Post[] = useMemo(
+    () => [
+      {
+        id: "hanna-post-1",
+        author: { id: "hanna", kind: "group", name: "ХАННА", avatar: postMusicCover, subtitle: "Сообщество · только что" },
+        time: "только что",
+        text: "Премьера трека «Русская красавица» уже сегодня вечером! Кто ждёт?",
+        media: [{ type: "photo", images: [postPhoto2] }],
+        stats: { likes: 12400, comments: 842, shares: 318 },
+      },
+      {
+        id: "hanna-post-2",
+        author: { id: "hanna", kind: "group", name: "ХАННА", avatar: postMusicCover, subtitle: "Сообщество · вчера" },
+        time: "вчера",
+        text: "Backstage съёмок нового клипа 🎬",
+        media: [{ type: "photo", images: [postPhoto3, postPhoto4] }],
+        stats: { likes: 9800, comments: 410, shares: 122 },
+      },
+    ],
+    [],
+  );
 
   const renderTabContent = () => {
     if (activeTab === "clips") {
@@ -262,7 +302,7 @@ const Groups = () => {
 
   return (
     <AppLayout variant="wide" right={<RightCommunityPanel fans={fans} />}>
-      <button onClick={() => setSelectedCommunity(false)} className="w-fit text-sm font-semibold text-primary hover:underline">‹ Все сообщества</button>
+      <button onClick={closeCommunity} className="w-fit text-sm font-semibold text-primary hover:underline">‹ Все сообщества</button>
       <section className="vk-card overflow-hidden rounded-xl">
         <div className="relative h-[305px] overflow-hidden bg-[radial-gradient(circle_at_22%_36%,hsl(var(--primary)/0.42),transparent_24%),radial-gradient(circle_at_78%_20%,hsl(var(--destructive)/0.28),transparent_30%),linear-gradient(105deg,hsl(var(--secondary)),hsl(var(--background)))]">
           <img src={avatarMe} alt="Обложка сообщества ХАННА" className="absolute left-[21%] top-4 h-[272px] w-[272px] object-cover" loading="lazy" />
@@ -314,6 +354,14 @@ const Groups = () => {
               {featured.map((src) => <img key={src} src={src} alt="Премьера трека" className="aspect-square rounded-lg object-cover" loading="lazy" />)}
             </div>
             <div className="mt-2 grid grid-cols-3 gap-3 text-sm"><b>ПРЕМЬЕРА ТРЕКА!</b><b>ПРЕМЬЕРА ТРЕКА!</b><b>ПРЕМЬЕРА ТРЕКА!</b></div>
+          </div>
+
+          {/* Записи сообщества — можно репостнуть к себе в ленту */}
+          <div className="flex flex-col gap-3">
+            <div className="px-1 text-sm font-semibold text-muted-foreground">Записи сообщества</div>
+            {communityPosts.map((p) => (
+              <PostCard key={p.id} post={p} />
+            ))}
           </div>
         </div>
         <RightCommunityPanel fans={fans} inline />
