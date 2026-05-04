@@ -302,7 +302,7 @@ const Groups = () => {
 
   return (
     <AppLayout variant="wide" right={<RightCommunityPanel fans={fans} />}>
-      <button onClick={() => setSelectedCommunity(false)} className="w-fit text-sm font-semibold text-primary hover:underline">‹ Все сообщества</button>
+      <button onClick={closeCommunity} className="w-fit text-sm font-semibold text-primary hover:underline">‹ Все сообщества</button>
       <section className="vk-card overflow-hidden rounded-xl">
         <div className="relative h-[305px] overflow-hidden bg-[radial-gradient(circle_at_22%_36%,hsl(var(--primary)/0.42),transparent_24%),radial-gradient(circle_at_78%_20%,hsl(var(--destructive)/0.28),transparent_30%),linear-gradient(105deg,hsl(var(--secondary)),hsl(var(--background)))]">
           <img src={avatarMe} alt="Обложка сообщества ХАННА" className="absolute left-[21%] top-4 h-[272px] w-[272px] object-cover" loading="lazy" />
@@ -354,6 +354,14 @@ const Groups = () => {
               {featured.map((src) => <img key={src} src={src} alt="Премьера трека" className="aspect-square rounded-lg object-cover" loading="lazy" />)}
             </div>
             <div className="mt-2 grid grid-cols-3 gap-3 text-sm"><b>ПРЕМЬЕРА ТРЕКА!</b><b>ПРЕМЬЕРА ТРЕКА!</b><b>ПРЕМЬЕРА ТРЕКА!</b></div>
+          </div>
+
+          {/* Записи сообщества — можно репостнуть к себе в ленту */}
+          <div className="flex flex-col gap-3">
+            <div className="px-1 text-sm font-semibold text-muted-foreground">Записи сообщества</div>
+            {communityPosts.map((p) => (
+              <PostCard key={p.id} post={p} />
+            ))}
           </div>
         </div>
         <RightCommunityPanel fans={fans} inline />
