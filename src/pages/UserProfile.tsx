@@ -434,4 +434,111 @@ const Row = ({
   </div>
 );
 
+const FriendsCard = ({
+  count,
+  avatars,
+  error,
+  onRetry,
+}: {
+  count: number;
+  avatars: string[];
+  error?: boolean;
+  onRetry?: () => void;
+}) => {
+  return (
+    <div className="vk-card p-4">
+      <Link to="/friends" className="flex items-center justify-between mb-3 group">
+        <div className="font-semibold text-sm group-hover:text-primary transition-colors">
+          Друзья
+        </div>
+        {!error && count > 0 && (
+          <div className="text-xs text-muted-foreground">{count}</div>
+        )}
+      </Link>
+      {error ? (
+        <ErrorState
+          title="Не удалось загрузить друзей"
+          description="Список временно недоступен."
+          onRetry={onRetry}
+          className="py-8"
+        />
+      ) : count === 0 || avatars.length === 0 ? (
+        <EmptyState
+          icon={<UsersIcon className="w-7 h-7" />}
+          title="Пока нет друзей"
+          description="Здесь появятся друзья пользователя."
+          className="py-8"
+        />
+      ) : (
+        <div className="grid grid-cols-3 gap-2">
+          {avatars.slice(0, 6).map((a, i) => (
+            <Link
+              key={i}
+              to="/friends"
+              className="flex flex-col items-center gap-1.5 group"
+            >
+              <img
+                src={a}
+                alt=""
+                className="w-full aspect-square rounded-lg object-cover"
+              />
+              <span className="text-[11px] text-muted-foreground group-hover:text-primary transition-colors truncate max-w-full">
+                Друг {i + 1}
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const PhotosCard = ({
+  photos,
+  error,
+  onRetry,
+}: {
+  photos: string[];
+  error?: boolean;
+  onRetry?: () => void;
+}) => {
+  if (error) {
+    return (
+      <div className="vk-card p-4">
+        <div className="font-semibold text-sm mb-2">Фотографии</div>
+        <ErrorState
+          title="Не удалось загрузить фото"
+          description="Попробуйте обновить раздел."
+          onRetry={onRetry}
+          className="py-8"
+        />
+      </div>
+    );
+  }
+
+  if (photos.length === 0) {
+    return (
+      <div className="vk-card p-4">
+        <div className="font-semibold text-sm mb-2">Фотографии</div>
+        <EmptyState
+          icon={<ImageIcon className="w-7 h-7" />}
+          title="Пока нет фото"
+          description="Здесь появятся загруженные фотографии."
+          className="py-8"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      to="/photos"
+      className="vk-card p-4 flex items-center justify-between hover:bg-secondary/40 transition-colors"
+    >
+      <div className="font-semibold text-sm">Фотографии</div>
+      <div className="text-xs text-muted-foreground">{photos.length}</div>
+    </Link>
+  );
+};
+
 export default UserProfile;
