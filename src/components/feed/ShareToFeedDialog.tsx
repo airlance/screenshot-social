@@ -68,16 +68,35 @@ export const ShareToFeedDialog = ({ open, onOpenChange, post }: Props) => {
           {/* Превью карточки-цитаты — если шарим репост, показываем оригинал */}
           {(() => {
             const src = post.repost?.original ?? post;
+            const href = authorHref(src.author);
+            const Avatar = (
+              <div className="w-8 h-8 rounded-full bg-secondary overflow-hidden shrink-0">
+                {src.author.avatar && (
+                  <img src={src.author.avatar} alt={src.author.name} className="w-full h-full object-cover" />
+                )}
+              </div>
+            );
+            const Name = (
+              <div className="text-sm font-semibold truncate hover:underline">{src.author.name}</div>
+            );
             return (
               <div className="rounded-lg border border-border bg-card/60 p-3">
                 <div className="flex items-center gap-2.5 mb-2">
-                  <div className="w-8 h-8 rounded-full bg-secondary overflow-hidden shrink-0">
-                    {src.author.avatar && (
-                      <img src={src.author.avatar} alt={src.author.name} className="w-full h-full object-cover" />
-                    )}
-                  </div>
+                  {href ? (
+                    <Link to={href} onClick={() => onOpenChange(false)} aria-label={src.author.name}>
+                      {Avatar}
+                    </Link>
+                  ) : (
+                    Avatar
+                  )}
                   <div className="min-w-0">
-                    <div className="text-sm font-semibold truncate">{src.author.name}</div>
+                    {href ? (
+                      <Link to={href} onClick={() => onOpenChange(false)} className="block min-w-0">
+                        {Name}
+                      </Link>
+                    ) : (
+                      Name
+                    )}
                     <div className="text-[11px] text-muted-foreground truncate">{src.time}</div>
                   </div>
                 </div>
