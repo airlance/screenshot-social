@@ -19,18 +19,20 @@ export const ShareToFeedDialog = ({ open, onOpenChange, post }: Props) => {
   const already = hasReposted(post.id);
 
   const onSubmit = () => {
-    if (already) {
-      toast({ title: "Вы уже репостнули эту запись" });
+    try {
+      if (already) {
+        toast({ title: "Вы уже репостнули эту запись" });
+        return;
+      }
+      share(post, text);
+      toast({
+        title: "Опубликовано в вашей ленте",
+        description: `Запись от ${post.author.name} теперь у вас.`,
+      });
+    } finally {
+      setText("");
       onOpenChange(false);
-      return;
     }
-    share(post, text);
-    setText("");
-    toast({
-      title: "Опубликовано в вашей ленте",
-      description: `Запись от ${post.author.name} теперь у вас.`,
-    });
-    onOpenChange(false);
   };
 
   return (
