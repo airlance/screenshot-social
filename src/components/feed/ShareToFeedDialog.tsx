@@ -1,9 +1,16 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Repeat2, X } from "lucide-react";
 import { useReposts } from "@/context/RepostsContext";
 import { useToast } from "@/hooks/use-toast";
-import type { Post } from "./types";
+import type { Author, Post } from "./types";
+
+/** Путь на страницу автора (профиль или сообщество). */
+const authorHref = (a: Author): string | null => {
+  if (!a.id) return null;
+  return a.kind === "group" ? `/groups?id=${a.id}` : `/profile/${a.id}`;
+};
 
 interface Props {
   open: boolean;
