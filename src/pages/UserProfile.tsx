@@ -29,6 +29,8 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { PostCard } from "@/components/feed/PostCard";
 import type { Post } from "@/components/feed/types";
+import { EmptyState, ErrorState } from "@/components/common/StateView";
+import { Users as UsersIcon } from "lucide-react";
 
 import avatar1 from "@/assets/avatar-1.jpg";
 import avatar2 from "@/assets/avatar-2.jpg";
