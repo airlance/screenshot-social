@@ -29,10 +29,14 @@ export const RepostsProvider = ({ children }: { children: ReactNode }) => {
   );
 
   const share = useCallback((original: Post, comment?: string) => {
+    // Если шарим уже-репост — цитируем оригинальную запись, а не обёртку.
+    const source: Post = original.repost
+      ? ({ ...original.repost.original, stats: { likes: 0, comments: 0, shares: 0 } } as Post)
+      : original;
     setReposts((prev) => {
       // Свернуть к одному репосту на оригинал
-      if (prev.some((p) => p.repost?.original.id === original.id)) return prev;
-      const { stats: _s, comments: _c, repost: _r, ...rest } = original;
+      if (prev.some((p) => p.repost?.original.id === source.id)) return prev;
+      const { stats: _s, comments: _c, repost: _r, ...rest } = source;
       const repostPost: Post = {
         id: `repost-${original.id}-${Date.now()}`,
         author: {
