@@ -58,24 +58,28 @@ export const ShareToFeedDialog = ({ open, onOpenChange, post }: Props) => {
             className="w-full resize-none rounded-lg bg-secondary/60 px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
           />
 
-          {/* Превью карточки-цитаты */}
-          <div className="rounded-lg border border-border bg-card/60 p-3">
-            <div className="flex items-center gap-2.5 mb-2">
-              <div className="w-8 h-8 rounded-full bg-secondary overflow-hidden shrink-0">
-                {post.author.avatar && (
-                  <img src={post.author.avatar} alt={post.author.name} className="w-full h-full object-cover" />
+          {/* Превью карточки-цитаты — если шарим репост, показываем оригинал */}
+          {(() => {
+            const src = post.repost?.original ?? post;
+            return (
+              <div className="rounded-lg border border-border bg-card/60 p-3">
+                <div className="flex items-center gap-2.5 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-secondary overflow-hidden shrink-0">
+                    {src.author.avatar && (
+                      <img src={src.author.avatar} alt={src.author.name} className="w-full h-full object-cover" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold truncate">{src.author.name}</div>
+                    <div className="text-[11px] text-muted-foreground truncate">{src.time}</div>
+                  </div>
+                </div>
+                {src.text && (
+                  <div className="text-sm text-foreground/90 line-clamp-3 whitespace-pre-line">{src.text}</div>
                 )}
               </div>
-              <div className="min-w-0">
-                <div className="text-sm font-semibold truncate">{post.author.name}</div>
-                <div className="text-[11px] text-muted-foreground truncate">{post.time}</div>
-              </div>
-            </div>
-            {post.text && (
-              <div className="text-sm text-foreground/90 line-clamp-3 whitespace-pre-line">{post.text}</div>
-            )}
-          </div>
-
+            );
+          })()}
           <div className="flex items-center justify-end gap-2">
             <button
               onClick={() => onOpenChange(false)}
