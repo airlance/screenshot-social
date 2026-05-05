@@ -363,47 +363,12 @@ const UserProfile = () => {
         )}
 
         <aside className="flex flex-col gap-3 self-start">
-          <div className="vk-card p-4">
-            <Link
-              to="/friends"
-              className="flex items-center justify-between mb-3 group"
-            >
-              <div className="font-semibold text-sm group-hover:text-primary transition-colors">
-                Друзья
-              </div>
-              <div className="text-xs text-muted-foreground">
-                {profile.friendsCount}
-              </div>
-            </Link>
-            <div className="grid grid-cols-3 gap-2">
-              {FALLBACK_AVATARS.slice(0, 6).map((a, i) => (
-                <Link
-                  key={i}
-                  to="/friends"
-                  className="flex flex-col items-center gap-1.5 group"
-                >
-                  <img
-                    src={a}
-                    alt=""
-                    className="w-full aspect-square rounded-lg object-cover"
-                  />
-                  <span className="text-[11px] text-muted-foreground group-hover:text-primary transition-colors truncate max-w-full">
-                    Друг {i + 1}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </div>
+          <FriendsCard
+            count={profile.friendsCount}
+            avatars={FALLBACK_AVATARS}
+          />
 
-          <Link
-            to="/photos"
-            className="vk-card p-4 flex items-center justify-between hover:bg-secondary/40 transition-colors"
-          >
-            <div className="font-semibold text-sm">Фотографии</div>
-            <div className="text-xs text-muted-foreground">
-              {PROFILE_PHOTOS.length}
-            </div>
-          </Link>
+          <PhotosCard photos={PROFILE_PHOTOS} />
         </aside>
       </section>
 
