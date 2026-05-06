@@ -27,6 +27,7 @@ import NotFound from "./pages/NotFound.tsx";
 import { PlayerProvider } from "./context/PlayerContext";
 import { StoriesProvider } from "./context/StoriesContext";
 import { RepostsProvider } from "./context/RepostsContext";
+import { MessengerProvider } from "./context/MessengerContext";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ const App = () => (
       <PlayerProvider>
       <StoriesProvider>
       <RepostsProvider>
+      <MessengerProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
@@ -64,6 +66,7 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
+      </MessengerProvider>
       </RepostsProvider>
       </StoriesProvider>
       </PlayerProvider>

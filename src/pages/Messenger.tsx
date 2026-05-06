@@ -1,80 +1,94 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TopBar } from "@/components/layout/TopBar";
 import { Sidebar } from "@/components/layout/Sidebar";
 import {
   Menu, Search, UserPlus, Archive, PenSquare, Settings, X,
-  CheckCheck, Phone, MoreHorizontal, Plus, Smile, Mic, Send,
-  ChevronsLeft, MessageCircleMore, BadgeCheck,
+  CheckCheck, Phone, MoreHorizontal, Plus, Mic, Send, Reply as ReplyIcon,
+  Paperclip, Video, BadgeCheck, MessageCircleMore,
 } from "lucide-react";
+import { useMessenger, type ChatContact, type Message } from "@/context/MessengerContext";
+import AudioMessage from "@/components/messenger/AudioMessage";
+import VideoMessage from "@/components/messenger/VideoMessage";
+import LinkPreview, { extractUrls } from "@/components/messenger/LinkPreview";
+import TypingIndicator from "@/components/messenger/TypingIndicator";
+import MessageContextMenu from "@/components/messenger/MessageContextMenu";
+import EmojiPicker from "@/components/messenger/EmojiPicker";
 
-type Chat = {
-  id: string;
-  name: string;
-  preview: string;
-  time: string;
-  unread?: number;
-  pinned?: boolean;
-  online?: boolean;
-  verified?: boolean;
-  isVK?: boolean;
-  active?: boolean;
-  read?: boolean;
-  emoji?: string;
-};
-
-const chats: Chat[] = [
-  { id: "vk", name: "ВКонтакте", preview: "Совершён вход в ваш аккаун…  · 1д", time: "", verified: true, isVK: true, active: true },
-  { id: "family", name: "❤️ Family chat", preview: "Thanks to all of you 🙌", time: "12:56", unread: 4, read: true },
-  { id: "leah", name: "Leah Collins", preview: "Do you have any vacation pla…", time: "10:45", online: true, pinned: true },
-  { id: "curry", name: "Curry Club — Ninjas fr…", preview: "You: Primavera Sound 2021 ticket…", time: "10:48", read: true, pinned: true, emoji: "🟡" },
-  { id: "mamie", name: "Mamie Cruz", preview: "Do you have any pets? 🐶", time: "16:20", online: true, pinned: true },
-  { id: "telegraf", name: "Telegraf.Design", preview: "You might miss this last week…", time: "18:20", unread: 1 },
-  { id: "evan", name: "Evan West", preview: "What do you think the best inventi…", time: "17:22", online: true },
-  { id: "nannie", name: "Nannie Watts", preview: "Let's meet around 14:00 near the…", time: "17:11" },
-  { id: "vicente", name: "Vicente de la Cruz", preview: "A new font type is awesome, let's…", time: "15:36", read: true },
-  { id: "kari", name: "Kari Granleese", preview: "I need your advice", time: "14:21" },
-];
-
-const Avatar = ({ name, isVK, online, size = 44 }: { name: string; isVK?: boolean; online?: boolean; size?: number }) => {
-  const initial = name.replace(/[^\p{L}]/gu, "").charAt(0).toUpperCase() || "?";
+const Avatar = ({ c, size = 44 }: { c: ChatContact; size?: number }) => {
+  const initial = c.name.replace(/[^\p{L}]/gu, "").charAt(0).toUpperCase() || "?";
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
-      {isVK ? (
-        <div className="w-full h-full rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-base">
-          VK
-        </div>
+      {c.isVK ? (
+        <div className="w-full h-full rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-base">VK</div>
+      ) : c.avatar ? (
+        <img src={c.avatar} alt="" className="w-full h-full rounded-full object-cover" />
       ) : (
         <div className="w-full h-full rounded-full bg-gradient-to-br from-secondary to-accent flex items-center justify-center text-foreground/80 font-semibold">
           {initial}
         </div>
       )}
-      {online && (
+      {c.online && (
         <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-background" />
       )}
     </div>
   );
 };
 
+const isLastInGroup = (msgs: Message[], i: number) => {
+  const m = msgs[i], n = msgs[i + 1];
+  if (!n) return true;
+  return n.senderId !== m.senderId || n.date !== m.date;
+};
+
+const bubbleRadius = (m: Message, last: boolean) => {
+  if (!last) return "18px";
+  return m.isOwn ? "18px 18px 4px 18px" : "18px 18px 18px 4px";
+};
+
 const Messenger = () => {
-  const [activeId, setActiveId] = useState("vk");
+  const { contacts, messages, typing, sendMessage } = useMessenger();
+  const [activeId, setActiveId] = useState<string>(contacts[0]?.id ?? "");
   const [text, setText] = useState("");
-  const active = chats.find((c) => c.id === activeId)!;
+  const [replyTo, setReplyTo] = useState<{ senderName: string; text: string } | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const endRef = useRef<HTMLDivElement>(null);
+  const active = contacts.find((c) => c.id === activeId)!;
+  const chatMessages = messages[activeId] ?? [];
+  const isTyping = typing.has(activeId);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages.length, isTyping, activeId]);
+
+  useEffect(() => {
+    const ta = inputRef.current;
+    if (!ta) return;
+    ta.style.height = "auto";
+    ta.style.height = `${Math.min(ta.scrollHeight, 160)}px`;
+  }, [text]);
+
+  const handleSend = () => {
+    const t = text.trim();
+    if (!t) return;
+    sendMessage(activeId, t, replyTo ?? undefined);
+    setText("");
+    setReplyTo(null);
+  };
+
+  let lastDate = "";
 
   return (
     <div className="min-h-screen bg-background">
       <TopBar />
       <div className="max-w-[1280px] mx-auto px-4 flex gap-4">
         <Sidebar />
-
         <main className="flex-1 min-w-0 py-3">
           <div className="vk-card overflow-hidden flex h-[calc(100vh-84px)]">
             {/* Chat list */}
             <section className="w-[300px] shrink-0 border-r border-border flex flex-col">
               <div className="h-14 px-4 flex items-center justify-between border-b border-border/60">
                 <div className="flex items-center gap-3">
-                  <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary text-foreground/70">
-                    <Menu className="w-5 h-5" />
-                  </button>
+                  <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary text-foreground/70"><Menu className="w-5 h-5" /></button>
                   <h2 className="font-semibold text-[15px]">Чаты</h2>
                 </div>
                 <div className="flex items-center gap-1 text-foreground/70">
@@ -87,11 +101,8 @@ const Messenger = () => {
               <div className="px-3 pt-3">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <input
-                    type="text"
-                    placeholder="Поиск"
-                    className="w-full h-9 pl-9 pr-3 rounded-lg bg-secondary text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
-                  />
+                  <input type="text" placeholder="Поиск"
+                    className="w-full h-9 pl-9 pr-3 rounded-lg bg-secondary text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40" />
                 </div>
                 <div className="flex items-center gap-2 mt-3 mb-2">
                   <button className="px-3 py-1 rounded-md bg-accent text-foreground text-[13px] font-medium">Все</button>
@@ -101,15 +112,12 @@ const Messenger = () => {
               </div>
 
               <div className="flex-1 overflow-y-auto px-2">
-                {chats.map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => setActiveId(c.id)}
+                {contacts.map((c) => (
+                  <button key={c.id} onClick={() => setActiveId(c.id)}
                     className={`w-full text-left flex items-start gap-3 px-2 py-2 rounded-lg mb-0.5 transition-colors ${
                       activeId === c.id ? "bg-accent" : "hover:bg-secondary/60"
-                    }`}
-                  >
-                    <Avatar name={c.name} isVK={c.isVK} online={c.online} />
+                    }`}>
+                    <Avatar c={c} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
                         <span className="text-[13.5px] font-semibold truncate">{c.name}</span>
@@ -119,14 +127,13 @@ const Messenger = () => {
                       </div>
                       <div className="flex items-center gap-1 mt-0.5">
                         <p className="text-[12.5px] text-muted-foreground truncate flex-1">{c.preview}</p>
-                        {c.unread && (
+                        {c.unread ? (
                           <span className="shrink-0 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[11px] font-semibold flex items-center justify-center">
                             {c.unread}
                           </span>
-                        )}
-                        {c.pinned && !c.unread && (
+                        ) : c.pinned ? (
                           <span className="shrink-0 text-muted-foreground text-xs">📌</span>
-                        )}
+                        ) : null}
                       </div>
                     </div>
                   </button>
@@ -147,87 +154,138 @@ const Messenger = () => {
             {/* Chat window */}
             <section className="flex-1 min-w-0 flex flex-col">
               <div className="h-14 px-4 flex items-center gap-3 border-b border-border/60">
-                <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary text-foreground/70">
-                  <X className="w-5 h-5" />
-                </button>
-                <Avatar name={active.name} isVK={active.isVK} size={36} />
+                <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary text-foreground/70"><X className="w-5 h-5" /></button>
+                <Avatar c={active} size={36} />
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
                     <span className="font-semibold text-[14px] truncate">{active.name}</span>
                     {active.verified && <BadgeCheck className="w-4 h-4 text-primary fill-primary/20" />}
                   </div>
                   <p className="text-[12px] text-muted-foreground truncate">
-                    {active.isVK ? "Сервисные уведомления" : active.online ? "был(а) недавно" : "был(а) в сети"}
+                    {active.isVK ? "Сервисные уведомления" : active.online ? "в сети" : "был(а) недавно"}
                   </p>
                 </div>
                 <div className="ml-auto flex items-center gap-1 text-foreground/70">
                   <button className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-secondary"><Phone className="w-[18px] h-[18px]" /></button>
+                  <button className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-secondary"><Video className="w-[18px] h-[18px]" /></button>
                   <button className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-secondary"><Search className="w-[18px] h-[18px]" /></button>
                   <button className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-secondary"><MoreHorizontal className="w-[18px] h-[18px]" /></button>
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
-                <div className="flex justify-center">
-                  <span className="text-[11px] text-muted-foreground bg-secondary/60 px-3 py-1 rounded-full">
-                    29 апреля 2021
-                  </span>
-                </div>
-
-                <div className="flex items-end gap-2 max-w-[70%]">
-                  <Avatar name={active.name} isVK={active.isVK} size={32} />
-                  <div className="bg-secondary rounded-2xl rounded-bl-sm px-4 py-2.5">
-                    <p className="text-[13px] font-semibold text-primary mb-0.5">ВКонтакте</p>
-                    <p className="text-[13.5px] leading-relaxed text-foreground">
-                      Для вашей страницы запрошено восстановление доступа.
-                      Никому не сообщайте номер телефона, с которого поступит проверочный звонок!
-                    </p>
-                    <p className="text-[10.5px] text-muted-foreground text-right mt-1">18:40</p>
+              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1.5">
+                {chatMessages.length === 0 && !isTyping && (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-sm text-muted-foreground">Нет сообщений. Напишите первым 👋</p>
                   </div>
-                </div>
-
-                <div className="flex justify-center">
-                  <span className="text-[11px] text-muted-foreground">вчера</span>
-                </div>
-
-                <div className="flex items-end gap-2 max-w-[70%]">
-                  <Avatar name={active.name} isVK={active.isVK} size={32} />
-                  <div className="bg-secondary rounded-2xl rounded-bl-sm px-4 py-2.5">
-                    <p className="text-[13px] font-semibold text-primary mb-0.5">ВКонтакте</p>
-                    <p className="text-[13.5px] leading-relaxed text-foreground">
-                      Совершён вход в ваш аккаунт Mark Roberts
-                    </p>
-                    <div className="text-[13px] text-foreground/90 mt-2 space-y-0.5">
-                      <p>Дата входа: 21 апреля 2026 в 14:11</p>
-                      <p>Устройство: через Safari</p>
-                      <p>Сервис: сайт «ВКонтакте»</p>
-                      <p>Геопозиция: București. Если это не вы, срочно смените пароль.</p>
+                )}
+                {chatMessages.map((msg, idx) => {
+                  const showDate = msg.date && msg.date !== lastDate;
+                  if (msg.date) lastDate = msg.date;
+                  const last = isLastInGroup(chatMessages, idx);
+                  const urls = extractUrls(msg.text);
+                  const prev = chatMessages[idx - 1];
+                  const showName = !msg.isOwn && (last || prev?.senderId !== msg.senderId);
+                  return (
+                    <div key={msg.id}>
+                      {showDate && (
+                        <div className="flex justify-center my-3">
+                          <span className="text-[11px] text-muted-foreground bg-secondary/60 px-3 py-1 rounded-full">{msg.date}</span>
+                        </div>
+                      )}
+                      <div className={`flex ${msg.isOwn ? "justify-end" : "justify-start"} ${last ? "mb-2" : "mb-0.5"}`}>
+                        <MessageContextMenu
+                          messageText={msg.text}
+                          senderName={msg.senderName}
+                          isOwn={msg.isOwn}
+                          onReply={(p) => { setReplyTo(p); setTimeout(() => inputRef.current?.focus(), 0); }}
+                        >
+                          <div
+                            className={`max-w-[85%] md:max-w-[480px] px-4 py-2 ${
+                              msg.isOwn ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"
+                            }`}
+                            style={{ borderRadius: bubbleRadius(msg, last) }}
+                          >
+                            {showName && (
+                              <p className="text-[13px] font-semibold mb-0.5 text-primary">{msg.senderName}</p>
+                            )}
+                            {msg.replyTo && (
+                              <div className={`mb-1.5 px-2 py-1 rounded border-l-[3px] ${
+                                msg.isOwn ? "border-primary-foreground/60 bg-primary-foreground/10" : "border-primary bg-background/60"
+                              }`}>
+                                <p className={`text-xs font-semibold truncate ${msg.isOwn ? "text-primary-foreground" : "text-primary"}`}>
+                                  {msg.replyTo.senderName}
+                                </p>
+                                <p className={`text-xs truncate ${msg.isOwn ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+                                  {msg.replyTo.text || "Медиа"}
+                                </p>
+                              </div>
+                            )}
+                            {msg.audio && <AudioMessage url={msg.audio.url} duration={msg.audio.duration} isOwn={msg.isOwn} />}
+                            {msg.video && <VideoMessage url={msg.video.url} thumbnail={msg.video.thumbnail} duration={msg.video.duration} />}
+                            {msg.text && <p className="text-[13.5px] leading-relaxed whitespace-pre-wrap break-words">{msg.text}</p>}
+                            {urls.map((u, i) => <LinkPreview key={i} url={u} isOwn={msg.isOwn} />)}
+                            {msg.images && (
+                              <div className="grid grid-cols-2 gap-1 mt-2 rounded-lg overflow-hidden">
+                                {msg.images.slice(0, 4).map((img, i) => (
+                                  <img key={i} src={img} alt="" className="w-full h-[140px] object-cover" />
+                                ))}
+                              </div>
+                            )}
+                            <div className={`flex items-center gap-1 justify-end mt-1 ${msg.isOwn ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                              <span className="text-[10.5px]">{msg.time}</span>
+                              {msg.isOwn && <CheckCheck size={14} />}
+                            </div>
+                          </div>
+                        </MessageContextMenu>
+                      </div>
                     </div>
-                    <button className="mt-3 w-full h-9 rounded-lg bg-background/40 hover:bg-background/60 text-[13px] font-medium text-foreground transition-colors">
-                      Сменить пароль ↗
-                    </button>
-                    <p className="text-[10.5px] text-muted-foreground text-right mt-1">14:11</p>
-                  </div>
-                </div>
+                  );
+                })}
+                {isTyping && <TypingIndicator name="Печатает…" />}
+                <div ref={endRef} />
               </div>
 
-              <div className="px-4 pb-3">
-                <div className="flex items-center gap-2 bg-secondary rounded-2xl px-3 py-2">
+              <div className="border-t border-border/60">
+                {replyTo && (
+                  <div className="flex items-center gap-2 px-4 pt-2">
+                    <div className="flex-1 flex items-stretch gap-2 bg-secondary/60 rounded-lg overflow-hidden border-l-[3px] border-primary px-3 py-1.5">
+                      <ReplyIcon size={16} className="text-primary mt-0.5 shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold text-primary truncate">Ответ {replyTo.senderName}</p>
+                        <p className="text-xs text-muted-foreground truncate">{replyTo.text || "Медиа"}</p>
+                      </div>
+                      <button onClick={() => setReplyTo(null)} className="p-1 hover:bg-secondary rounded-md text-muted-foreground self-center" aria-label="Отменить ответ">
+                        <X size={16} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-end gap-2 px-4 py-3">
                   <button className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground shrink-0">
                     <Plus className="w-4 h-4" />
                   </button>
-                  <input
-                    type="text"
+                  <button className="w-8 h-8 flex items-center justify-center text-foreground/70 hover:text-foreground rounded-lg hover:bg-secondary">
+                    <Paperclip className="w-5 h-5" />
+                  </button>
+                  <textarea
+                    ref={inputRef}
+                    rows={1}
                     value={text}
                     onChange={(e) => setText(e.target.value)}
-                    placeholder="Сообщение"
-                    className="flex-1 bg-transparent text-[14px] placeholder:text-muted-foreground focus:outline-none"
+                    onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+                    placeholder={replyTo ? `Ответить ${replyTo.senderName}…` : "Сообщение"}
+                    className="flex-1 resize-none bg-secondary rounded-2xl px-4 py-2 text-[14px] leading-5 placeholder:text-muted-foreground focus:outline-none max-h-40"
                   />
-                  <button className="w-8 h-8 flex items-center justify-center text-foreground/70 hover:text-foreground"><Smile className="w-5 h-5" /></button>
-                  {text ? (
-                    <button className="w-8 h-8 flex items-center justify-center text-primary"><Send className="w-5 h-5" /></button>
+                  <EmojiPicker onSelect={(e) => setText((p) => p + e)} />
+                  {text.trim() ? (
+                    <button onClick={handleSend} className="w-9 h-9 flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90" aria-label="Отправить">
+                      <Send className="w-5 h-5" />
+                    </button>
                   ) : (
-                    <button className="w-8 h-8 flex items-center justify-center text-foreground/70 hover:text-foreground"><Mic className="w-5 h-5" /></button>
+                    <button className="w-8 h-8 flex items-center justify-center text-foreground/70 hover:text-foreground rounded-lg hover:bg-secondary">
+                      <Mic className="w-5 h-5" />
+                    </button>
                   )}
                 </div>
               </div>
