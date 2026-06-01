@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useState, ReactNode } from "react";
+import { createContext, useCallback, useContext, useMemo, useState, ReactNode } from "react";
 
 export interface Message {
   id: string;
@@ -27,6 +27,16 @@ export interface ChatContact {
   isVK?: boolean;
   read?: boolean;
   isGroup?: boolean;
+  description?: string;
+  memberIds?: string[];
+}
+
+export interface AvailableMember {
+  id: string;
+  name: string;
+  avatar: string;
+  status: string;
+  online?: boolean;
 }
 
 const CURRENT_USER = { id: "self", name: "Вы" };
@@ -38,13 +48,25 @@ const initialContacts: ChatContact[] = [
   { id: "vk", name: "ВКонтакте", preview: "Совершён вход в ваш аккаунт · 1д", time: "", verified: true, isVK: true },
   { id: "family", name: "❤️ Family chat", preview: "Thanks to all of you 🙌", time: "12:56", unread: 4, read: true, isGroup: true, avatar: "https://i.pravatar.cc/100?img=58" },
   { id: "leah", name: "Leah Collins", preview: "Do you have any vacation pla…", time: "10:45", online: true, pinned: true, avatar: "https://i.pravatar.cc/100?img=47" },
-  { id: "curry", name: "Curry Club — Ninjas fr…", preview: "Вы: Primavera Sound 2021…", time: "10:48", read: true, pinned: true, isGroup: true, avatar: "https://i.pravatar.cc/100?img=65" },
+  { id: "curry", name: "Curry Club — Ninjas fr…", preview: "Вы: Primavera Sound 2021…", time: "10:48", read: true, pinned: true, isGroup: true, avatar: "https://i.pravatar.cc/100?img=65", memberIds: ["m2", "m3", "m4"] },
   { id: "mamie", name: "Mamie Cruz", preview: "Do you have any pets? 🐶", time: "16:20", online: true, pinned: true, avatar: "https://i.pravatar.cc/100?img=26" },
   { id: "telegraf", name: "Telegraf.Design", preview: "You might miss this last week…", time: "18:20", unread: 1, avatar: "https://i.pravatar.cc/100?img=12" },
   { id: "evan", name: "Evan West", preview: "What do you think the best invent…", time: "17:22", online: true, avatar: "https://i.pravatar.cc/100?img=53" },
   { id: "nannie", name: "Nannie Watts", preview: "Let's meet around 14:00 near the…", time: "17:11", avatar: "https://i.pravatar.cc/100?img=45" },
   { id: "vicente", name: "Vicente de la Cruz", preview: "A new font type is awesome, let's…", time: "15:36", read: true, avatar: "https://i.pravatar.cc/100?img=33" },
   { id: "kari", name: "Kari Granleese", preview: "I need your advice", time: "14:21", avatar: "https://i.pravatar.cc/100?img=32" },
+];
+
+const availableMembersList: AvailableMember[] = [
+  { id: "m2", name: "Alex Djos", avatar: "https://i.pravatar.cc/100?img=11", status: "в сети", online: true },
+  { id: "m3", name: "Michael Borisov", avatar: "https://i.pravatar.cc/100?img=15", status: "был(а) недавно" },
+  { id: "m4", name: "Sofia Lee", avatar: "https://i.pravatar.cc/100?img=23", status: "в сети", online: true },
+  { id: "leah", name: "Leah Collins", avatar: "https://i.pravatar.cc/100?img=47", status: "в сети", online: true },
+  { id: "mamie", name: "Mamie Cruz", avatar: "https://i.pravatar.cc/100?img=26", status: "в сети", online: true },
+  { id: "evan", name: "Evan West", avatar: "https://i.pravatar.cc/100?img=53", status: "был(а) 2ч назад" },
+  { id: "nannie", name: "Nannie Watts", avatar: "https://i.pravatar.cc/100?img=45", status: "был(а) вчера" },
+  { id: "vicente", name: "Vicente de la Cruz", avatar: "https://i.pravatar.cc/100?img=33", status: "был(а) недавно" },
+  { id: "kari", name: "Kari Granleese", avatar: "https://i.pravatar.cc/100?img=32", status: "в сети", online: true },
 ];
 
 const seedMessages: Record<string, Message[]> = {
@@ -95,11 +117,23 @@ const BOTS: Record<string, { id: string; name: string }[]> = {
   ],
 };
 
+interface CreateChatInput {
+  name: string;
+  isGroup: boolean;
+  memberIds?: string[];
+  avatar?: string;
+  description?: string;
+}
+
 interface Ctx {
   contacts: ChatContact[];
   messages: Record<string, Message[]>;
   typing: Set<string>;
+  availableMembers: AvailableMember[];
   sendMessage: (chatId: string, text: string, replyTo?: { senderName: string; text: string }) => void;
+  createChat: (input: CreateChatInput) => string;
+  getMembers: (chatId: string) => AvailableMember[];
+  getMediaFromChat: (chatId: string) => string[];
 }
 
 const MessengerContext = createContext<Ctx | null>(null);
@@ -151,11 +185,72 @@ export const MessengerProvider = ({ children }: { children: ReactNode }) => {
     }, 1100 + Math.random() * 1200);
   }, []);
 
-  return (
-    <MessengerContext.Provider value={{ contacts, messages, typing, sendMessage }}>
-      {children}
-    </MessengerContext.Provider>
+  const createChat = useCallback<Ctx["createChat"]>((input) => {
+    const id = `chat-${Date.now()}`;
+    const time = nowTime();
+    const newContact: ChatContact = {
+      id,
+      name: input.name,
+      preview: input.isGroup ? "Группа создана" : "Чат создан",
+      time,
+      avatar: input.avatar,
+      isGroup: input.isGroup,
+      memberIds: input.memberIds,
+      description: input.description,
+      pinned: false,
+    };
+    setContacts((p) => [newContact, ...p]);
+    setMessages((p) => ({ ...p, [id]: [] }));
+    return id;
+  }, []);
+
+  const getMembers = useCallback<Ctx["getMembers"]>(
+    (chatId) => {
+      const c = contacts.find((x) => x.id === chatId);
+      if (!c) return [];
+      if (c.isGroup) {
+        const ids = c.memberIds ?? [];
+        return availableMembersList.filter((m) => ids.includes(m.id));
+      }
+      // direct chat: just the contact itself
+      return [
+        {
+          id: c.id,
+          name: c.name,
+          avatar: c.avatar ?? "",
+          status: c.online ? "в сети" : "был(а) недавно",
+          online: c.online,
+        },
+      ];
+    },
+    [contacts]
   );
+
+  const getMediaFromChat = useCallback<Ctx["getMediaFromChat"]>(
+    (chatId) => {
+      const list = messages[chatId] ?? [];
+      const out: string[] = [];
+      list.forEach((m) => m.images?.forEach((i) => out.push(i)));
+      return out;
+    },
+    [messages]
+  );
+
+  const value = useMemo(
+    () => ({
+      contacts,
+      messages,
+      typing,
+      availableMembers: availableMembersList,
+      sendMessage,
+      createChat,
+      getMembers,
+      getMediaFromChat,
+    }),
+    [contacts, messages, typing, sendMessage, createChat, getMembers, getMediaFromChat]
+  );
+
+  return <MessengerContext.Provider value={value}>{children}</MessengerContext.Provider>;
 };
 
 export const useMessenger = () => {
