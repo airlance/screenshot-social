@@ -299,9 +299,27 @@ const Messenger = () => {
                 </div>
               </div>
             </section>
+
+            {infoOpen && (
+              <ChatInfoPanel chatId={activeId} onClose={() => setInfoOpen(false)} />
+            )}
           </div>
         </main>
       </div>
+
+      <CreateChatDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={(id) => setActiveId(id)}
+      />
+      {call && (
+        <CallScreen
+          type={call.type}
+          contactName={active.name}
+          contactAvatar={active.avatar}
+          onEnd={() => setCall(null)}
+        />
+      )}
     </div>
   );
 };
