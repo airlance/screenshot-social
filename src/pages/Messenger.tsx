@@ -100,7 +100,7 @@ const Messenger = () => {
                 <div className="flex items-center gap-1 text-foreground/70">
                   <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary"><UserPlus className="w-[18px] h-[18px]" /></button>
                   <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary"><Archive className="w-[18px] h-[18px]" /></button>
-                  <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary"><PenSquare className="w-[18px] h-[18px]" /></button>
+                  <button onClick={() => setCreateOpen(true)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary" aria-label="Создать чат"><PenSquare className="w-[18px] h-[18px]" /></button>
                 </div>
               </div>
 
@@ -161,20 +161,23 @@ const Messenger = () => {
             <section className="flex-1 min-w-0 flex flex-col">
               <div className="h-14 px-4 flex items-center gap-3 border-b border-border/60">
                 <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary text-foreground/70"><X className="w-5 h-5" /></button>
-                <Avatar c={active} size={36} />
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-semibold text-[14px] truncate">{active.name}</span>
-                    {active.verified && <BadgeCheck className="w-4 h-4 text-primary fill-primary/20" />}
+                <button onClick={() => setInfoOpen((v) => !v)} className="flex items-center gap-3 min-w-0 text-left flex-1">
+                  <Avatar c={active} size={36} />
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-[14px] truncate">{active.name}</span>
+                      {active.verified && <BadgeCheck className="w-4 h-4 text-primary fill-primary/20" />}
+                    </div>
+                    <p className="text-[12px] text-muted-foreground truncate">
+                      {active.isVK ? "Сервисные уведомления" : active.online ? "в сети" : "был(а) недавно"}
+                    </p>
                   </div>
-                  <p className="text-[12px] text-muted-foreground truncate">
-                    {active.isVK ? "Сервисные уведомления" : active.online ? "в сети" : "был(а) недавно"}
-                  </p>
-                </div>
+                </button>
                 <div className="ml-auto flex items-center gap-1 text-foreground/70">
-                  <button className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-secondary"><Phone className="w-[18px] h-[18px]" /></button>
-                  <button className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-secondary"><Video className="w-[18px] h-[18px]" /></button>
+                  <button onClick={() => setCall({ type: "voice" })} className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-secondary" aria-label="Аудиозвонок"><Phone className="w-[18px] h-[18px]" /></button>
+                  <button onClick={() => setCall({ type: "video" })} className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-secondary" aria-label="Видеозвонок"><Video className="w-[18px] h-[18px]" /></button>
                   <button className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-secondary"><Search className="w-[18px] h-[18px]" /></button>
+                  <button onClick={() => setInfoOpen((v) => !v)} className={`w-9 h-9 flex items-center justify-center rounded-lg hover:bg-secondary ${infoOpen ? "bg-secondary" : ""}`} aria-label="Информация о чате"><LayoutPanelLeft className="w-[18px] h-[18px]" /></button>
                   <button className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-secondary"><MoreHorizontal className="w-[18px] h-[18px]" /></button>
                 </div>
               </div>
