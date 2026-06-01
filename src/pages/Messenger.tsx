@@ -4,7 +4,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import {
   Menu, Search, UserPlus, Archive, PenSquare, Settings, X,
   CheckCheck, Phone, MoreHorizontal, Plus, Mic, Send, Reply as ReplyIcon,
-  Paperclip, Video, BadgeCheck, MessageCircleMore,
+  Paperclip, Video, BadgeCheck, MessageCircleMore, LayoutPanelLeft,
 } from "lucide-react";
 import { useMessenger, type ChatContact, type Message } from "@/context/MessengerContext";
 import AudioMessage from "@/components/messenger/AudioMessage";
@@ -13,6 +13,9 @@ import LinkPreview, { extractUrls } from "@/components/messenger/LinkPreview";
 import TypingIndicator from "@/components/messenger/TypingIndicator";
 import MessageContextMenu from "@/components/messenger/MessageContextMenu";
 import EmojiPicker from "@/components/messenger/EmojiPicker";
+import ChatInfoPanel from "@/components/messenger/ChatInfoPanel";
+import CreateChatDialog from "@/components/messenger/CreateChatDialog";
+import CallScreen from "@/components/messenger/CallScreen";
 
 const Avatar = ({ c, size = 44 }: { c: ChatContact; size?: number }) => {
   const initial = c.name.replace(/[^\p{L}]/gu, "").charAt(0).toUpperCase() || "?";
@@ -50,6 +53,9 @@ const Messenger = () => {
   const [activeId, setActiveId] = useState<string>(contacts[0]?.id ?? "");
   const [text, setText] = useState("");
   const [replyTo, setReplyTo] = useState<{ senderName: string; text: string } | null>(null);
+  const [infoOpen, setInfoOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [call, setCall] = useState<{ type: "voice" | "video" } | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const active = contacts.find((c) => c.id === activeId)!;
@@ -94,7 +100,7 @@ const Messenger = () => {
                 <div className="flex items-center gap-1 text-foreground/70">
                   <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary"><UserPlus className="w-[18px] h-[18px]" /></button>
                   <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary"><Archive className="w-[18px] h-[18px]" /></button>
-                  <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary"><PenSquare className="w-[18px] h-[18px]" /></button>
+                  <button onClick={() => setCreateOpen(true)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary" aria-label="Создать чат"><PenSquare className="w-[18px] h-[18px]" /></button>
                 </div>
               </div>
 
@@ -155,20 +161,23 @@ const Messenger = () => {
             <section className="flex-1 min-w-0 flex flex-col">
               <div className="h-14 px-4 flex items-center gap-3 border-b border-border/60">
                 <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary text-foreground/70"><X className="w-5 h-5" /></button>
-                <Avatar c={active} size={36} />
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-semibold text-[14px] truncate">{active.name}</span>
-                    {active.verified && <BadgeCheck className="w-4 h-4 text-primary fill-primary/20" />}
+                <button onClick={() => setInfoOpen((v) => !v)} className="flex items-center gap-3 min-w-0 text-left flex-1">
+                  <Avatar c={active} size={36} />
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-[14px] truncate">{active.name}</span>
+                      {active.verified && <BadgeCheck className="w-4 h-4 text-primary fill-primary/20" />}
+                    </div>
+                    <p className="text-[12px] text-muted-foreground truncate">
+                      {active.isVK ? "Сервисные уведомления" : active.online ? "в сети" : "был(а) недавно"}
+                    </p>
                   </div>
-                  <p className="text-[12px] text-muted-foreground truncate">
-                    {active.isVK ? "Сервисные уведомления" : active.online ? "в сети" : "был(а) недавно"}
-                  </p>
-                </div>
+                </button>
                 <div className="ml-auto flex items-center gap-1 text-foreground/70">
-                  <button className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-secondary"><Phone className="w-[18px] h-[18px]" /></button>
-                  <button className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-secondary"><Video className="w-[18px] h-[18px]" /></button>
+                  <button onClick={() => setCall({ type: "voice" })} className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-secondary" aria-label="Аудиозвонок"><Phone className="w-[18px] h-[18px]" /></button>
+                  <button onClick={() => setCall({ type: "video" })} className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-secondary" aria-label="Видеозвонок"><Video className="w-[18px] h-[18px]" /></button>
                   <button className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-secondary"><Search className="w-[18px] h-[18px]" /></button>
+                  <button onClick={() => setInfoOpen((v) => !v)} className={`w-9 h-9 flex items-center justify-center rounded-lg hover:bg-secondary ${infoOpen ? "bg-secondary" : ""}`} aria-label="Информация о чате"><LayoutPanelLeft className="w-[18px] h-[18px]" /></button>
                   <button className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-secondary"><MoreHorizontal className="w-[18px] h-[18px]" /></button>
                 </div>
               </div>
@@ -290,9 +299,27 @@ const Messenger = () => {
                 </div>
               </div>
             </section>
+
+            {infoOpen && (
+              <ChatInfoPanel chatId={activeId} onClose={() => setInfoOpen(false)} />
+            )}
           </div>
         </main>
       </div>
+
+      <CreateChatDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={(id) => setActiveId(id)}
+      />
+      {call && (
+        <CallScreen
+          type={call.type}
+          contactName={active.name}
+          contactAvatar={active.avatar}
+          onEnd={() => setCall(null)}
+        />
+      )}
     </div>
   );
 };
