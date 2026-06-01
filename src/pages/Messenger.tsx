@@ -4,7 +4,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import {
   Menu, Search, UserPlus, Archive, PenSquare, Settings, X,
   CheckCheck, Phone, MoreHorizontal, Plus, Mic, Send, Reply as ReplyIcon,
-  Paperclip, Video, BadgeCheck, MessageCircleMore,
+  Paperclip, Video, BadgeCheck, MessageCircleMore, LayoutPanelLeft,
 } from "lucide-react";
 import { useMessenger, type ChatContact, type Message } from "@/context/MessengerContext";
 import AudioMessage from "@/components/messenger/AudioMessage";
@@ -13,6 +13,9 @@ import LinkPreview, { extractUrls } from "@/components/messenger/LinkPreview";
 import TypingIndicator from "@/components/messenger/TypingIndicator";
 import MessageContextMenu from "@/components/messenger/MessageContextMenu";
 import EmojiPicker from "@/components/messenger/EmojiPicker";
+import ChatInfoPanel from "@/components/messenger/ChatInfoPanel";
+import CreateChatDialog from "@/components/messenger/CreateChatDialog";
+import CallScreen from "@/components/messenger/CallScreen";
 
 const Avatar = ({ c, size = 44 }: { c: ChatContact; size?: number }) => {
   const initial = c.name.replace(/[^\p{L}]/gu, "").charAt(0).toUpperCase() || "?";
@@ -50,6 +53,9 @@ const Messenger = () => {
   const [activeId, setActiveId] = useState<string>(contacts[0]?.id ?? "");
   const [text, setText] = useState("");
   const [replyTo, setReplyTo] = useState<{ senderName: string; text: string } | null>(null);
+  const [infoOpen, setInfoOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [call, setCall] = useState<{ type: "voice" | "video" } | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const active = contacts.find((c) => c.id === activeId)!;
