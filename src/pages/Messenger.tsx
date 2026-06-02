@@ -54,19 +54,33 @@ const bubbleRadius = (m: Message, last: boolean) => {
   return m.isOwn ? "18px 18px 4px 18px" : "18px 18px 18px 4px";
 };
 
+const readAsDataURL = (file: File) =>
+  new Promise<string>((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result as string);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+
 const Messenger = () => {
-  const { contacts, messages, typing, sendMessage } = useMessenger();
+  const { contacts, messages, typing, sendMessage, sendPayload, pinMessage, deleteMessage } = useMessenger();
   const [activeId, setActiveId] = useState<string>(contacts[0]?.id ?? "");
   const [text, setText] = useState("");
   const [replyTo, setReplyTo] = useState<{ senderName: string; text: string } | null>(null);
+  const [pendingImages, setPendingImages] = useState<string[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<MessageFile[]>([]);
   const [infoOpen, setInfoOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [call, setCall] = useState<{ type: "voice" | "video" } | null>(null);
+  const [forwardMsgId, setForwardMsgId] = useState<string | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const active = contacts.find((c) => c.id === activeId)!;
   const chatMessages = messages[activeId] ?? [];
   const isTyping = typing.has(activeId);
+  const pinnedMessages = chatMessages.filter((m) => m.pinned);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -81,11 +95,44 @@ const Messenger = () => {
 
   const handleSend = () => {
     const t = text.trim();
-    if (!t) return;
-    sendMessage(activeId, t, replyTo ?? undefined);
+    if (!t && pendingImages.length === 0 && pendingFiles.length === 0) return;
+    sendPayload(activeId, {
+      text: t,
+      images: pendingImages.length ? pendingImages : undefined,
+      files: pendingFiles.length ? pendingFiles : undefined,
+      replyTo: replyTo ?? undefined,
+    });
     setText("");
     setReplyTo(null);
+    setPendingImages([]);
+    setPendingFiles([]);
   };
+
+  const handlePickImages = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    const urls = await Promise.all(files.map(readAsDataURL));
+    setPendingImages((p) => [...p, ...urls]);
+    e.target.value = "";
+  };
+
+  const handlePickFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    const items: MessageFile[] = await Promise.all(
+      files.map(async (f) => ({
+        name: f.name,
+        size: f.size,
+        mime: f.type,
+        url: await readAsDataURL(f),
+      }))
+    );
+    setPendingFiles((p) => [...p, ...items]);
+    e.target.value = "";
+  };
+
+  // unused but kept for type compat with original
+  void sendMessage;
 
   let lastDate = "";
 
