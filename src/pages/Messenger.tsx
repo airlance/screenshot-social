@@ -351,6 +351,35 @@ const Messenger = () => {
 
 
               <div className="border-t border-border/60">
+                {(pendingImages.length > 0 || pendingFiles.length > 0) && (
+                  <div className="px-4 pt-2 flex flex-wrap gap-2">
+                    {pendingImages.map((src, i) => (
+                      <div key={`img-${i}`} className="relative w-16 h-16 rounded-lg overflow-hidden bg-secondary">
+                        <img src={src} alt="" className="w-full h-full object-cover" />
+                        <button
+                          onClick={() => setPendingImages((p) => p.filter((_, j) => j !== i))}
+                          className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-background/80 flex items-center justify-center text-foreground hover:bg-background"
+                          aria-label="Удалить"
+                        >
+                          <X size={10} />
+                        </button>
+                      </div>
+                    ))}
+                    {pendingFiles.map((f, i) => (
+                      <div key={`f-${i}`} className="relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-secondary max-w-[220px]">
+                        <FileText size={16} className="text-primary shrink-0" />
+                        <span className="text-xs truncate">{f.name}</span>
+                        <button
+                          onClick={() => setPendingFiles((p) => p.filter((_, j) => j !== i))}
+                          className="shrink-0 text-muted-foreground hover:text-foreground"
+                          aria-label="Удалить"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 {replyTo && (
                   <div className="flex items-center gap-2 px-4 pt-2">
                     <div className="flex-1 flex items-stretch gap-2 bg-secondary/60 rounded-lg overflow-hidden border-l-[3px] border-primary px-3 py-1.5">
@@ -366,10 +395,41 @@ const Messenger = () => {
                   </div>
                 )}
                 <div className="flex items-end gap-2 px-4 py-3">
-                  <button className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground shrink-0">
-                    <Plus className="w-4 h-4" />
-                  </button>
-                  <button className="w-8 h-8 flex items-center justify-center text-foreground/70 hover:text-foreground rounded-lg hover:bg-secondary">
+                  <input
+                    ref={imageInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handlePickImages}
+                  />
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    className="hidden"
+                    onChange={handlePickFiles}
+                  />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground shrink-0" aria-label="Прикрепить">
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" side="top" className="w-44">
+                      <DropdownMenuItem onClick={() => imageInputRef.current?.click()} className="gap-2 cursor-pointer">
+                        <ImageIcon size={16} className="text-primary" /> Фото или видео
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => fileInputRef.current?.click()} className="gap-2 cursor-pointer">
+                        <FileText size={16} className="text-primary" /> Документ
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-8 h-8 flex items-center justify-center text-foreground/70 hover:text-foreground rounded-lg hover:bg-secondary"
+                    aria-label="Прикрепить файл"
+                  >
                     <Paperclip className="w-5 h-5" />
                   </button>
                   <textarea
@@ -382,7 +442,7 @@ const Messenger = () => {
                     className="flex-1 resize-none bg-secondary rounded-2xl px-4 py-2 text-[14px] leading-5 placeholder:text-muted-foreground focus:outline-none max-h-40"
                   />
                   <EmojiPicker onSelect={(e) => setText((p) => p + e)} />
-                  {text.trim() ? (
+                  {(text.trim() || pendingImages.length || pendingFiles.length) ? (
                     <button onClick={handleSend} className="w-9 h-9 flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90" aria-label="Отправить">
                       <Send className="w-5 h-5" />
                     </button>
@@ -393,6 +453,7 @@ const Messenger = () => {
                   )}
                 </div>
               </div>
+
             </section>
 
             {infoOpen && (
