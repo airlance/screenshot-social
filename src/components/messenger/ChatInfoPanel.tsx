@@ -131,7 +131,7 @@ const ChatInfoPanel = ({ chatId, onClose }: ChatInfoPanelProps) => {
             </button>
           ))}
         </div>
-        {tab === "Медиа" ? (
+        {tab === "Медиа" && (
           media.length === 0 ? (
             <div className="py-8 text-center text-xs text-muted-foreground flex flex-col items-center gap-2">
               <ImageIcon size={28} className="opacity-50" />
@@ -149,11 +149,43 @@ const ChatInfoPanel = ({ chatId, onClose }: ChatInfoPanelProps) => {
               ))}
             </div>
           )
-        ) : (
+        )}
+        {tab === "Файлы" && (
+          files.length === 0 ? (
+            <div className="py-8 text-center text-xs text-muted-foreground flex flex-col items-center gap-2">
+              <FileText size={28} className="opacity-50" />
+              Файлов пока нет
+            </div>
+          ) : (
+            <div className="p-2 space-y-1">
+              {files.map((f, i) => (
+                <a
+                  key={i}
+                  href={f.url}
+                  download={f.name}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-secondary/60 transition-colors"
+                >
+                  <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center text-primary shrink-0">
+                    <FileText size={18} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[13px] font-medium truncate">{f.name}</p>
+                    <p className="text-[11px] text-muted-foreground">{formatSize(f.size)}</p>
+                  </div>
+                  <Download size={14} className="text-muted-foreground shrink-0" />
+                </a>
+              ))}
+            </div>
+          )
+        )}
+        {(tab === "Ссылки" || tab === "Голос") && (
           <div className="py-8 text-center text-xs text-muted-foreground">
             Пока ничего нет
           </div>
         )}
+
       </div>
     </aside>
   );
