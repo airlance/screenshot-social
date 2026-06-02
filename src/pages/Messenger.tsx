@@ -5,8 +5,9 @@ import {
   Menu, Search, UserPlus, Archive, PenSquare, Settings, X,
   CheckCheck, Phone, MoreHorizontal, Plus, Mic, Send, Reply as ReplyIcon,
   Paperclip, Video, BadgeCheck, MessageCircleMore, LayoutPanelLeft,
+  Image as ImageIcon, FileText, Pin, Forward as ForwardIcon,
 } from "lucide-react";
-import { useMessenger, type ChatContact, type Message } from "@/context/MessengerContext";
+import { useMessenger, type ChatContact, type Message, type MessageFile } from "@/context/MessengerContext";
 import AudioMessage from "@/components/messenger/AudioMessage";
 import VideoMessage from "@/components/messenger/VideoMessage";
 import LinkPreview, { extractUrls } from "@/components/messenger/LinkPreview";
@@ -16,6 +17,11 @@ import EmojiPicker from "@/components/messenger/EmojiPicker";
 import ChatInfoPanel from "@/components/messenger/ChatInfoPanel";
 import CreateChatDialog from "@/components/messenger/CreateChatDialog";
 import CallScreen from "@/components/messenger/CallScreen";
+import FileAttachment from "@/components/messenger/FileAttachment";
+import ForwardDialog from "@/components/messenger/ForwardDialog";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Avatar = ({ c, size = 44 }: { c: ChatContact; size?: number }) => {
   const initial = c.name.replace(/[^\p{L}]/gu, "").charAt(0).toUpperCase() || "?";
