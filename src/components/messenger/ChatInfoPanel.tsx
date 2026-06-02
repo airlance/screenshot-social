@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BellOff, Image as ImageIcon, LogOut, Star, UserPlus, X } from "lucide-react";
+import { BellOff, FileText, Image as ImageIcon, LogOut, Star, UserPlus, X, Download } from "lucide-react";
 import { useMessenger } from "@/context/MessengerContext";
 
 interface ChatInfoPanelProps {
@@ -7,14 +7,22 @@ interface ChatInfoPanelProps {
   onClose: () => void;
 }
 
-const TABS = ["Медиа", "Ссылки", "Файлы", "Голос"] as const;
+const TABS = ["Медиа", "Файлы", "Ссылки", "Голос"] as const;
+
+const formatSize = (b: number) => {
+  if (b < 1024) return `${b} Б`;
+  if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} КБ`;
+  return `${(b / 1024 / 1024).toFixed(2)} МБ`;
+};
 
 const ChatInfoPanel = ({ chatId, onClose }: ChatInfoPanelProps) => {
-  const { contacts, getMembers, getMediaFromChat } = useMessenger();
+  const { contacts, getMembers, getMediaFromChat, getFilesFromChat } = useMessenger();
   const contact = contacts.find((c) => c.id === chatId);
   const members = getMembers(chatId);
   const media = getMediaFromChat(chatId);
+  const files = getFilesFromChat(chatId);
   const [tab, setTab] = useState<(typeof TABS)[number]>("Медиа");
+
 
   if (!contact) return null;
 
