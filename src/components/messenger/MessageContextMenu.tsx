@@ -1,4 +1,4 @@
-import { Reply, Pin, Copy, Forward, Trash2, Heart, CheckCircle } from "lucide-react";
+import { Reply, Pin, PinOff, Copy, Forward, Trash2, Heart, CheckCircle } from "lucide-react";
 import {
   ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger,
 } from "@/components/ui/context-menu";
@@ -12,10 +12,17 @@ interface Props {
   messageText?: string;
   senderName?: string;
   isOwn?: boolean;
+  isPinned?: boolean;
   onReply?: (p: { senderName: string; text: string }) => void;
+  onPin?: () => void;
+  onForward?: () => void;
+  onDelete?: () => void;
 }
 
-const MessageContextMenu = ({ children, messageText, senderName, isOwn, onReply }: Props) => {
+const MessageContextMenu = ({
+  children, messageText, senderName, isOwn, isPinned,
+  onReply, onPin, onForward, onDelete,
+}: Props) => {
   const [reaction, setReaction] = useState<string | null>(null);
 
   const react = (emoji: string) => {
@@ -48,8 +55,9 @@ const MessageContextMenu = ({ children, messageText, senderName, isOwn, onReply 
             <Heart size={18} className="text-muted-foreground" />Нравится
           </ContextMenuItem>
           <ContextMenuItem className="gap-3 px-3 py-2 text-sm cursor-pointer"
-            onClick={() => toast({ title: "Закреплено" })}>
-            <Pin size={18} className="text-muted-foreground" />Закрепить
+            onClick={() => { onPin?.(); toast({ title: isPinned ? "Откреплено" : "Закреплено" }); }}>
+            {isPinned ? <PinOff size={18} className="text-muted-foreground" /> : <Pin size={18} className="text-muted-foreground" />}
+            {isPinned ? "Открепить" : "Закрепить"}
           </ContextMenuItem>
           {messageText && (
             <ContextMenuItem className="gap-3 px-3 py-2 text-sm cursor-pointer"
@@ -58,12 +66,12 @@ const MessageContextMenu = ({ children, messageText, senderName, isOwn, onReply 
             </ContextMenuItem>
           )}
           <ContextMenuItem className="gap-3 px-3 py-2 text-sm cursor-pointer"
-            onClick={() => toast({ title: "Переслать" })}>
+            onClick={() => onForward?.()}>
             <Forward size={18} className="text-muted-foreground" />Переслать
           </ContextMenuItem>
           <ContextMenuSeparator />
           <ContextMenuItem className="gap-3 px-3 py-2 text-sm cursor-pointer text-destructive focus:text-destructive"
-            onClick={() => toast({ title: "Удалено", variant: "destructive" })}>
+            onClick={() => { onDelete?.(); toast({ title: "Удалено", variant: "destructive" }); }}>
             <Trash2 size={18} />Удалить
           </ContextMenuItem>
           <ContextMenuItem className="gap-3 px-3 py-2 text-sm cursor-pointer"
