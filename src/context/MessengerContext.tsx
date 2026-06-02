@@ -1,5 +1,12 @@
 import { createContext, useCallback, useContext, useMemo, useState, ReactNode } from "react";
 
+export interface MessageFile {
+  name: string;
+  size: number;
+  url: string;
+  mime?: string;
+}
+
 export interface Message {
   id: string;
   senderId: string;
@@ -9,9 +16,12 @@ export interface Message {
   date?: string;
   isOwn?: boolean;
   images?: string[];
+  files?: MessageFile[];
   audio?: { url: string; duration: string };
   video?: { url: string; thumbnail: string; duration: string };
   replyTo?: { senderName: string; text: string };
+  pinned?: boolean;
+  forwardedFrom?: string;
 }
 
 export interface ChatContact {
@@ -103,6 +113,11 @@ const seedMessages: Record<string, Message[]> = {
       audio: { url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", duration: "0:42" },
     },
     {
+      id: "c5", senderId: "m4", senderName: "Sofia Lee",
+      text: "Бронь отеля во вложении 📎", time: "10:47", date: "28 ноября 2025",
+      files: [{ name: "Barcelona_hotel.pdf", size: 248_320, url: "#", mime: "application/pdf" }],
+    },
+    {
       id: "c4", senderId: "self", senderName: "Вы",
       text: "Primavera Sound 2021 tickets bought!", time: "10:48", isOwn: true, date: "2 декабря 2025",
     },
@@ -125,42 +140,46 @@ interface CreateChatInput {
   description?: string;
 }
 
+interface SendPayload {
+  text?: string;
+  images?: string[];
+  files?: MessageFile[];
+  replyTo?: { senderName: string; text: string };
+  forwardedFrom?: string;
+}
+
 interface Ctx {
   contacts: ChatContact[];
   messages: Record<string, Message[]>;
   typing: Set<string>;
   availableMembers: AvailableMember[];
   sendMessage: (chatId: string, text: string, replyTo?: { senderName: string; text: string }) => void;
+  sendPayload: (chatId: string, payload: SendPayload) => void;
+  pinMessage: (chatId: string, messageId: string) => void;
+  forwardMessage: (sourceChatId: string, messageId: string, targetChatIds: string[]) => void;
+  deleteMessage: (chatId: string, messageId: string) => void;
   createChat: (input: CreateChatInput) => string;
   getMembers: (chatId: string) => AvailableMember[];
   getMediaFromChat: (chatId: string) => string[];
+  getFilesFromChat: (chatId: string) => MessageFile[];
+  getPinnedFromChat: (chatId: string) => Message[];
 }
 
 const MessengerContext = createContext<Ctx | null>(null);
+
+const previewFromPayload = (p: SendPayload): string => {
+  if (p.text) return `Вы: ${p.text}`;
+  if (p.images?.length) return `Вы: 🖼️ Фото${p.images.length > 1 ? ` (${p.images.length})` : ""}`;
+  if (p.files?.length) return `Вы: 📎 ${p.files[0].name}`;
+  return "Вы:";
+};
 
 export const MessengerProvider = ({ children }: { children: ReactNode }) => {
   const [contacts, setContacts] = useState<ChatContact[]>(initialContacts);
   const [messages, setMessages] = useState<Record<string, Message[]>>(seedMessages);
   const [typing, setTyping] = useState<Set<string>>(new Set());
 
-  const sendMessage = useCallback<Ctx["sendMessage"]>((chatId, text, replyTo) => {
-    const trimmed = text.trim();
-    if (!trimmed) return;
-    const time = nowTime();
-    const msg: Message = {
-      id: `m-${Date.now()}`,
-      senderId: CURRENT_USER.id,
-      senderName: CURRENT_USER.name,
-      text: trimmed,
-      time,
-      isOwn: true,
-      replyTo,
-    };
-    setMessages((p) => ({ ...p, [chatId]: [...(p[chatId] ?? []), msg] }));
-    setContacts((p) =>
-      p.map((c) => (c.id === chatId ? { ...c, preview: `Вы: ${trimmed}`, time, read: true, unread: undefined } : c))
-    );
-
+  const triggerBot = useCallback((chatId: string) => {
     const bots = BOTS[chatId];
     if (!bots) return;
     setTyping((s) => new Set(s).add(chatId));
@@ -184,6 +203,66 @@ export const MessengerProvider = ({ children }: { children: ReactNode }) => {
       });
     }, 1100 + Math.random() * 1200);
   }, []);
+
+  const sendPayload = useCallback<Ctx["sendPayload"]>((chatId, payload) => {
+    const text = (payload.text ?? "").trim();
+    if (!text && !payload.images?.length && !payload.files?.length) return;
+    const time = nowTime();
+    const msg: Message = {
+      id: `m-${Date.now()}`,
+      senderId: CURRENT_USER.id,
+      senderName: CURRENT_USER.name,
+      text,
+      time,
+      isOwn: true,
+      images: payload.images,
+      files: payload.files,
+      replyTo: payload.replyTo,
+      forwardedFrom: payload.forwardedFrom,
+    };
+    setMessages((p) => ({ ...p, [chatId]: [...(p[chatId] ?? []), msg] }));
+    setContacts((p) =>
+      p.map((c) =>
+        c.id === chatId
+          ? { ...c, preview: previewFromPayload({ ...payload, text }), time, read: true, unread: undefined }
+          : c
+      )
+    );
+    triggerBot(chatId);
+  }, [triggerBot]);
+
+  const sendMessage = useCallback<Ctx["sendMessage"]>((chatId, text, replyTo) => {
+    sendPayload(chatId, { text, replyTo });
+  }, [sendPayload]);
+
+  const pinMessage = useCallback<Ctx["pinMessage"]>((chatId, messageId) => {
+    setMessages((p) => ({
+      ...p,
+      [chatId]: (p[chatId] ?? []).map((m) =>
+        m.id === messageId ? { ...m, pinned: !m.pinned } : m
+      ),
+    }));
+  }, []);
+
+  const deleteMessage = useCallback<Ctx["deleteMessage"]>((chatId, messageId) => {
+    setMessages((p) => ({
+      ...p,
+      [chatId]: (p[chatId] ?? []).filter((m) => m.id !== messageId),
+    }));
+  }, []);
+
+  const forwardMessage = useCallback<Ctx["forwardMessage"]>((sourceChatId, messageId, targetChatIds) => {
+    const src = (messages[sourceChatId] ?? []).find((m) => m.id === messageId);
+    if (!src) return;
+    targetChatIds.forEach((cid) => {
+      sendPayload(cid, {
+        text: src.text,
+        images: src.images,
+        files: src.files,
+        forwardedFrom: src.senderName,
+      });
+    });
+  }, [messages, sendPayload]);
 
   const createChat = useCallback<Ctx["createChat"]>((input) => {
     const id = `chat-${Date.now()}`;
@@ -212,7 +291,6 @@ export const MessengerProvider = ({ children }: { children: ReactNode }) => {
         const ids = c.memberIds ?? [];
         return availableMembersList.filter((m) => ids.includes(m.id));
       }
-      // direct chat: just the contact itself
       return [
         {
           id: c.id,
@@ -236,6 +314,21 @@ export const MessengerProvider = ({ children }: { children: ReactNode }) => {
     [messages]
   );
 
+  const getFilesFromChat = useCallback<Ctx["getFilesFromChat"]>(
+    (chatId) => {
+      const list = messages[chatId] ?? [];
+      const out: MessageFile[] = [];
+      list.forEach((m) => m.files?.forEach((f) => out.push(f)));
+      return out;
+    },
+    [messages]
+  );
+
+  const getPinnedFromChat = useCallback<Ctx["getPinnedFromChat"]>(
+    (chatId) => (messages[chatId] ?? []).filter((m) => m.pinned),
+    [messages]
+  );
+
   const value = useMemo(
     () => ({
       contacts,
@@ -243,11 +336,17 @@ export const MessengerProvider = ({ children }: { children: ReactNode }) => {
       typing,
       availableMembers: availableMembersList,
       sendMessage,
+      sendPayload,
+      pinMessage,
+      forwardMessage,
+      deleteMessage,
       createChat,
       getMembers,
       getMediaFromChat,
+      getFilesFromChat,
+      getPinnedFromChat,
     }),
-    [contacts, messages, typing, sendMessage, createChat, getMembers, getMediaFromChat]
+    [contacts, messages, typing, sendMessage, sendPayload, pinMessage, forwardMessage, deleteMessage, createChat, getMembers, getMediaFromChat, getFilesFromChat, getPinnedFromChat]
   );
 
   return <MessengerContext.Provider value={value}>{children}</MessengerContext.Provider>;

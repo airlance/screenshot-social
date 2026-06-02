@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BellOff, Image as ImageIcon, LogOut, Star, UserPlus, X } from "lucide-react";
+import { BellOff, FileText, Image as ImageIcon, LogOut, Star, UserPlus, X, Download } from "lucide-react";
 import { useMessenger } from "@/context/MessengerContext";
 
 interface ChatInfoPanelProps {
@@ -7,14 +7,22 @@ interface ChatInfoPanelProps {
   onClose: () => void;
 }
 
-const TABS = ["Медиа", "Ссылки", "Файлы", "Голос"] as const;
+const TABS = ["Медиа", "Файлы", "Ссылки", "Голос"] as const;
+
+const formatSize = (b: number) => {
+  if (b < 1024) return `${b} Б`;
+  if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} КБ`;
+  return `${(b / 1024 / 1024).toFixed(2)} МБ`;
+};
 
 const ChatInfoPanel = ({ chatId, onClose }: ChatInfoPanelProps) => {
-  const { contacts, getMembers, getMediaFromChat } = useMessenger();
+  const { contacts, getMembers, getMediaFromChat, getFilesFromChat } = useMessenger();
   const contact = contacts.find((c) => c.id === chatId);
   const members = getMembers(chatId);
   const media = getMediaFromChat(chatId);
+  const files = getFilesFromChat(chatId);
   const [tab, setTab] = useState<(typeof TABS)[number]>("Медиа");
+
 
   if (!contact) return null;
 
@@ -123,7 +131,7 @@ const ChatInfoPanel = ({ chatId, onClose }: ChatInfoPanelProps) => {
             </button>
           ))}
         </div>
-        {tab === "Медиа" ? (
+        {tab === "Медиа" && (
           media.length === 0 ? (
             <div className="py-8 text-center text-xs text-muted-foreground flex flex-col items-center gap-2">
               <ImageIcon size={28} className="opacity-50" />
@@ -141,11 +149,43 @@ const ChatInfoPanel = ({ chatId, onClose }: ChatInfoPanelProps) => {
               ))}
             </div>
           )
-        ) : (
+        )}
+        {tab === "Файлы" && (
+          files.length === 0 ? (
+            <div className="py-8 text-center text-xs text-muted-foreground flex flex-col items-center gap-2">
+              <FileText size={28} className="opacity-50" />
+              Файлов пока нет
+            </div>
+          ) : (
+            <div className="p-2 space-y-1">
+              {files.map((f, i) => (
+                <a
+                  key={i}
+                  href={f.url}
+                  download={f.name}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-secondary/60 transition-colors"
+                >
+                  <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center text-primary shrink-0">
+                    <FileText size={18} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[13px] font-medium truncate">{f.name}</p>
+                    <p className="text-[11px] text-muted-foreground">{formatSize(f.size)}</p>
+                  </div>
+                  <Download size={14} className="text-muted-foreground shrink-0" />
+                </a>
+              ))}
+            </div>
+          )
+        )}
+        {(tab === "Ссылки" || tab === "Голос") && (
           <div className="py-8 text-center text-xs text-muted-foreground">
             Пока ничего нет
           </div>
         )}
+
       </div>
     </aside>
   );

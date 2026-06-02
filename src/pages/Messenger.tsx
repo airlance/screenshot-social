@@ -5,8 +5,9 @@ import {
   Menu, Search, UserPlus, Archive, PenSquare, Settings, X,
   CheckCheck, Phone, MoreHorizontal, Plus, Mic, Send, Reply as ReplyIcon,
   Paperclip, Video, BadgeCheck, MessageCircleMore, LayoutPanelLeft,
+  Image as ImageIcon, FileText, Pin, Forward as ForwardIcon,
 } from "lucide-react";
-import { useMessenger, type ChatContact, type Message } from "@/context/MessengerContext";
+import { useMessenger, type ChatContact, type Message, type MessageFile } from "@/context/MessengerContext";
 import AudioMessage from "@/components/messenger/AudioMessage";
 import VideoMessage from "@/components/messenger/VideoMessage";
 import LinkPreview, { extractUrls } from "@/components/messenger/LinkPreview";
@@ -16,6 +17,11 @@ import EmojiPicker from "@/components/messenger/EmojiPicker";
 import ChatInfoPanel from "@/components/messenger/ChatInfoPanel";
 import CreateChatDialog from "@/components/messenger/CreateChatDialog";
 import CallScreen from "@/components/messenger/CallScreen";
+import FileAttachment from "@/components/messenger/FileAttachment";
+import ForwardDialog from "@/components/messenger/ForwardDialog";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Avatar = ({ c, size = 44 }: { c: ChatContact; size?: number }) => {
   const initial = c.name.replace(/[^\p{L}]/gu, "").charAt(0).toUpperCase() || "?";
@@ -48,19 +54,33 @@ const bubbleRadius = (m: Message, last: boolean) => {
   return m.isOwn ? "18px 18px 4px 18px" : "18px 18px 18px 4px";
 };
 
+const readAsDataURL = (file: File) =>
+  new Promise<string>((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result as string);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+
 const Messenger = () => {
-  const { contacts, messages, typing, sendMessage } = useMessenger();
+  const { contacts, messages, typing, sendMessage, sendPayload, pinMessage, deleteMessage } = useMessenger();
   const [activeId, setActiveId] = useState<string>(contacts[0]?.id ?? "");
   const [text, setText] = useState("");
   const [replyTo, setReplyTo] = useState<{ senderName: string; text: string } | null>(null);
+  const [pendingImages, setPendingImages] = useState<string[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<MessageFile[]>([]);
   const [infoOpen, setInfoOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [call, setCall] = useState<{ type: "voice" | "video" } | null>(null);
+  const [forwardMsgId, setForwardMsgId] = useState<string | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const active = contacts.find((c) => c.id === activeId)!;
   const chatMessages = messages[activeId] ?? [];
   const isTyping = typing.has(activeId);
+  const pinnedMessages = chatMessages.filter((m) => m.pinned);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -75,11 +95,44 @@ const Messenger = () => {
 
   const handleSend = () => {
     const t = text.trim();
-    if (!t) return;
-    sendMessage(activeId, t, replyTo ?? undefined);
+    if (!t && pendingImages.length === 0 && pendingFiles.length === 0) return;
+    sendPayload(activeId, {
+      text: t,
+      images: pendingImages.length ? pendingImages : undefined,
+      files: pendingFiles.length ? pendingFiles : undefined,
+      replyTo: replyTo ?? undefined,
+    });
     setText("");
     setReplyTo(null);
+    setPendingImages([]);
+    setPendingFiles([]);
   };
+
+  const handlePickImages = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    const urls = await Promise.all(files.map(readAsDataURL));
+    setPendingImages((p) => [...p, ...urls]);
+    e.target.value = "";
+  };
+
+  const handlePickFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    const items: MessageFile[] = await Promise.all(
+      files.map(async (f) => ({
+        name: f.name,
+        size: f.size,
+        mime: f.type,
+        url: await readAsDataURL(f),
+      }))
+    );
+    setPendingFiles((p) => [...p, ...items]);
+    e.target.value = "";
+  };
+
+  // unused but kept for type compat with original
+  void sendMessage;
 
   let lastDate = "";
 
@@ -182,6 +235,28 @@ const Messenger = () => {
                 </div>
               </div>
 
+              {pinnedMessages.length > 0 && (
+                <div className="px-4 py-2 border-b border-border/60 bg-secondary/30 flex items-center gap-3">
+                  <Pin className="w-4 h-4 text-primary shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-semibold text-primary">
+                      Закреплённое сообщение{pinnedMessages.length > 1 ? ` · ${pinnedMessages.length}` : ""}
+                    </p>
+                    <p className="text-[12.5px] truncate text-foreground/80">
+                      <span className="font-medium">{pinnedMessages[pinnedMessages.length - 1].senderName}: </span>
+                      {pinnedMessages[pinnedMessages.length - 1].text || "Вложение"}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => pinMessage(activeId, pinnedMessages[pinnedMessages.length - 1].id)}
+                    className="p-1 hover:bg-secondary rounded-md text-muted-foreground shrink-0"
+                    aria-label="Открепить"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
+
               <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1.5">
                 {chatMessages.length === 0 && !isTyping && (
                   <div className="flex items-center justify-center h-full">
@@ -207,16 +282,32 @@ const Messenger = () => {
                           messageText={msg.text}
                           senderName={msg.senderName}
                           isOwn={msg.isOwn}
+                          isPinned={msg.pinned}
                           onReply={(p) => { setReplyTo(p); setTimeout(() => inputRef.current?.focus(), 0); }}
+                          onPin={() => pinMessage(activeId, msg.id)}
+                          onForward={() => setForwardMsgId(msg.id)}
+                          onDelete={() => deleteMessage(activeId, msg.id)}
                         >
                           <div
-                            className={`max-w-[85%] md:max-w-[480px] px-4 py-2 ${
+                            className={`relative max-w-[85%] md:max-w-[480px] px-4 py-2 ${
                               msg.isOwn ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"
                             }`}
                             style={{ borderRadius: bubbleRadius(msg, last) }}
                           >
+                            {msg.pinned && (
+                              <Pin
+                                size={12}
+                                className={`absolute -top-1.5 ${msg.isOwn ? "-left-1.5" : "-right-1.5"} bg-card rounded-full p-0.5 box-content border border-border text-primary`}
+                              />
+                            )}
                             {showName && (
                               <p className="text-[13px] font-semibold mb-0.5 text-primary">{msg.senderName}</p>
+                            )}
+                            {msg.forwardedFrom && (
+                              <div className={`flex items-center gap-1.5 mb-1 text-[11px] ${msg.isOwn ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+                                <ForwardIcon size={12} />
+                                <span>Переслано от <span className="font-semibold">{msg.forwardedFrom}</span></span>
+                              </div>
                             )}
                             {msg.replyTo && (
                               <div className={`mb-1.5 px-2 py-1 rounded border-l-[3px] ${
@@ -241,6 +332,9 @@ const Messenger = () => {
                                 ))}
                               </div>
                             )}
+                            {msg.files?.map((f, i) => (
+                              <FileAttachment key={i} file={f} isOwn={msg.isOwn} />
+                            ))}
                             <div className={`flex items-center gap-1 justify-end mt-1 ${msg.isOwn ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
                               <span className="text-[10.5px]">{msg.time}</span>
                               {msg.isOwn && <CheckCheck size={14} />}
@@ -255,7 +349,37 @@ const Messenger = () => {
                 <div ref={endRef} />
               </div>
 
+
               <div className="border-t border-border/60">
+                {(pendingImages.length > 0 || pendingFiles.length > 0) && (
+                  <div className="px-4 pt-2 flex flex-wrap gap-2">
+                    {pendingImages.map((src, i) => (
+                      <div key={`img-${i}`} className="relative w-16 h-16 rounded-lg overflow-hidden bg-secondary">
+                        <img src={src} alt="" className="w-full h-full object-cover" />
+                        <button
+                          onClick={() => setPendingImages((p) => p.filter((_, j) => j !== i))}
+                          className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-background/80 flex items-center justify-center text-foreground hover:bg-background"
+                          aria-label="Удалить"
+                        >
+                          <X size={10} />
+                        </button>
+                      </div>
+                    ))}
+                    {pendingFiles.map((f, i) => (
+                      <div key={`f-${i}`} className="relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-secondary max-w-[220px]">
+                        <FileText size={16} className="text-primary shrink-0" />
+                        <span className="text-xs truncate">{f.name}</span>
+                        <button
+                          onClick={() => setPendingFiles((p) => p.filter((_, j) => j !== i))}
+                          className="shrink-0 text-muted-foreground hover:text-foreground"
+                          aria-label="Удалить"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 {replyTo && (
                   <div className="flex items-center gap-2 px-4 pt-2">
                     <div className="flex-1 flex items-stretch gap-2 bg-secondary/60 rounded-lg overflow-hidden border-l-[3px] border-primary px-3 py-1.5">
@@ -271,10 +395,41 @@ const Messenger = () => {
                   </div>
                 )}
                 <div className="flex items-end gap-2 px-4 py-3">
-                  <button className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground shrink-0">
-                    <Plus className="w-4 h-4" />
-                  </button>
-                  <button className="w-8 h-8 flex items-center justify-center text-foreground/70 hover:text-foreground rounded-lg hover:bg-secondary">
+                  <input
+                    ref={imageInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handlePickImages}
+                  />
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    className="hidden"
+                    onChange={handlePickFiles}
+                  />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground shrink-0" aria-label="Прикрепить">
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" side="top" className="w-44">
+                      <DropdownMenuItem onClick={() => imageInputRef.current?.click()} className="gap-2 cursor-pointer">
+                        <ImageIcon size={16} className="text-primary" /> Фото или видео
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => fileInputRef.current?.click()} className="gap-2 cursor-pointer">
+                        <FileText size={16} className="text-primary" /> Документ
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-8 h-8 flex items-center justify-center text-foreground/70 hover:text-foreground rounded-lg hover:bg-secondary"
+                    aria-label="Прикрепить файл"
+                  >
                     <Paperclip className="w-5 h-5" />
                   </button>
                   <textarea
@@ -287,7 +442,7 @@ const Messenger = () => {
                     className="flex-1 resize-none bg-secondary rounded-2xl px-4 py-2 text-[14px] leading-5 placeholder:text-muted-foreground focus:outline-none max-h-40"
                   />
                   <EmojiPicker onSelect={(e) => setText((p) => p + e)} />
-                  {text.trim() ? (
+                  {(text.trim() || pendingImages.length || pendingFiles.length) ? (
                     <button onClick={handleSend} className="w-9 h-9 flex items-center justify-center rounded-lg bg-primary text-primary-foreground hover:bg-primary/90" aria-label="Отправить">
                       <Send className="w-5 h-5" />
                     </button>
@@ -298,6 +453,7 @@ const Messenger = () => {
                   )}
                 </div>
               </div>
+
             </section>
 
             {infoOpen && (
@@ -320,8 +476,15 @@ const Messenger = () => {
           onEnd={() => setCall(null)}
         />
       )}
+      <ForwardDialog
+        open={forwardMsgId !== null}
+        onOpenChange={(v) => !v && setForwardMsgId(null)}
+        sourceChatId={activeId}
+        messageId={forwardMsgId}
+      />
     </div>
   );
 };
+
 
 export default Messenger;
