@@ -235,6 +235,28 @@ const Messenger = () => {
                 </div>
               </div>
 
+              {pinnedMessages.length > 0 && (
+                <div className="px-4 py-2 border-b border-border/60 bg-secondary/30 flex items-center gap-3">
+                  <Pin className="w-4 h-4 text-primary shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-semibold text-primary">
+                      Закреплённое сообщение{pinnedMessages.length > 1 ? ` · ${pinnedMessages.length}` : ""}
+                    </p>
+                    <p className="text-[12.5px] truncate text-foreground/80">
+                      <span className="font-medium">{pinnedMessages[pinnedMessages.length - 1].senderName}: </span>
+                      {pinnedMessages[pinnedMessages.length - 1].text || "Вложение"}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => pinMessage(activeId, pinnedMessages[pinnedMessages.length - 1].id)}
+                    className="p-1 hover:bg-secondary rounded-md text-muted-foreground shrink-0"
+                    aria-label="Открепить"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
+
               <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1.5">
                 {chatMessages.length === 0 && !isTyping && (
                   <div className="flex items-center justify-center h-full">
@@ -260,16 +282,32 @@ const Messenger = () => {
                           messageText={msg.text}
                           senderName={msg.senderName}
                           isOwn={msg.isOwn}
+                          isPinned={msg.pinned}
                           onReply={(p) => { setReplyTo(p); setTimeout(() => inputRef.current?.focus(), 0); }}
+                          onPin={() => pinMessage(activeId, msg.id)}
+                          onForward={() => setForwardMsgId(msg.id)}
+                          onDelete={() => deleteMessage(activeId, msg.id)}
                         >
                           <div
-                            className={`max-w-[85%] md:max-w-[480px] px-4 py-2 ${
+                            className={`relative max-w-[85%] md:max-w-[480px] px-4 py-2 ${
                               msg.isOwn ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"
                             }`}
                             style={{ borderRadius: bubbleRadius(msg, last) }}
                           >
+                            {msg.pinned && (
+                              <Pin
+                                size={12}
+                                className={`absolute -top-1.5 ${msg.isOwn ? "-left-1.5" : "-right-1.5"} bg-card rounded-full p-0.5 box-content border border-border text-primary`}
+                              />
+                            )}
                             {showName && (
                               <p className="text-[13px] font-semibold mb-0.5 text-primary">{msg.senderName}</p>
+                            )}
+                            {msg.forwardedFrom && (
+                              <div className={`flex items-center gap-1.5 mb-1 text-[11px] ${msg.isOwn ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+                                <ForwardIcon size={12} />
+                                <span>Переслано от <span className="font-semibold">{msg.forwardedFrom}</span></span>
+                              </div>
                             )}
                             {msg.replyTo && (
                               <div className={`mb-1.5 px-2 py-1 rounded border-l-[3px] ${
@@ -294,6 +332,9 @@ const Messenger = () => {
                                 ))}
                               </div>
                             )}
+                            {msg.files?.map((f, i) => (
+                              <FileAttachment key={i} file={f} isOwn={msg.isOwn} />
+                            ))}
                             <div className={`flex items-center gap-1 justify-end mt-1 ${msg.isOwn ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
                               <span className="text-[10.5px]">{msg.time}</span>
                               {msg.isOwn && <CheckCheck size={14} />}
@@ -307,6 +348,7 @@ const Messenger = () => {
                 {isTyping && <TypingIndicator name="Печатает…" />}
                 <div ref={endRef} />
               </div>
+
 
               <div className="border-t border-border/60">
                 {replyTo && (
