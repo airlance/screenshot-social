@@ -476,8 +476,15 @@ const Messenger = () => {
           onEnd={() => setCall(null)}
         />
       )}
+      <ForwardDialog
+        open={forwardMsgId !== null}
+        onOpenChange={(v) => !v && setForwardMsgId(null)}
+        sourceChatId={activeId}
+        messageId={forwardMsgId}
+      />
     </div>
   );
 };
+
 
 export default Messenger;
