@@ -24,9 +24,51 @@ export const TopBar = () => {
           />
         </div>
 
-        <button className="w-10 h-10 rounded-full hover:bg-secondary flex items-center justify-center transition-colors">
-          <Bell className="w-5 h-5 text-foreground/80" />
-        </button>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="w-10 h-10 rounded-full hover:bg-secondary flex items-center justify-center transition-colors">
+              <Bell className="w-5 h-5 text-foreground/80" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent
+            align="end"
+            sideOffset={10}
+            className="w-[400px] rounded-xl border-border bg-popover p-0 shadow-elevated"
+          >
+            <div className="flex items-center justify-between px-4 py-3">
+              <div className="text-sm font-semibold">Ваш профиль</div>
+              <Link to="/settings" className="rounded-md bg-secondary px-3 py-1.5 text-xs font-medium hover:bg-accent">
+                Настройки
+              </Link>
+            </div>
+            <div className="px-4 pb-2 text-[11px] font-bold tracking-wider text-muted-foreground">
+              ПРОСМОТРЕННЫЕ
+            </div>
+            <div className="flex items-start gap-3 px-4 pb-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" style={{ background: "hsl(28 95% 55%)" }}>
+                <AlertCircle className="h-5 w-5 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-sm leading-snug">
+                    <span className="font-semibold">Защитите свой аккаунт.</span> Соблюдайте простые правила, и ваши данные будут в безопасности.
+                  </p>
+                  <span className="shrink-0 text-xs text-muted-foreground">5 мин назад</span>
+                </div>
+                <div className="mt-2 flex items-center gap-3">
+                  <button className="vk-pill rounded-lg px-3 !py-1 text-xs">Защитить аккаунт</button>
+                  <button className="text-xs font-medium text-primary hover:underline">Подробности</button>
+                </div>
+              </div>
+            </div>
+            <div className="px-4 py-4 text-center text-xs text-muted-foreground">
+              Показаны последние новости
+            </div>
+            <Link to="/notifications" className="block border-t border-border py-3.5 text-center text-sm font-medium hover:bg-secondary/50">
+              Показать все
+            </Link>
+          </PopoverContent>
+        </Popover>
 
         <PlayerPopover />
 
