@@ -1,0 +1,546 @@
+import { useState, type ReactNode } from "react";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Search, HelpCircle, Zap, Volume2, MessageSquare, Bell, Heart, Share2, Plus, Lock } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+type SectionKey =
+  | "account"
+  | "security"
+  | "privacy"
+  | "notifications"
+  | "blacklist"
+  | "apps"
+  | "voices";
+
+const SECTIONS: { key: SectionKey; label: string; badge?: "vkid" }[] = [
+  { key: "account", label: "Аккаунт и внешний вид" },
+  { key: "security", label: "Безопасность", badge: "vkid" },
+  { key: "privacy", label: "Приватность" },
+  { key: "notifications", label: "Уведомления" },
+  { key: "blacklist", label: "Чёрный список" },
+  { key: "apps", label: "Настройки приложений", badge: "vkid" },
+  { key: "voices", label: "Голоса" },
+];
+
+const Settings = () => {
+  const [section, setSection] = useState<SectionKey>("account");
+
+  return (
+    <AppLayout
+      variant="wide"
+      right={
+        <div className="vk-card p-2">
+          {SECTIONS.map((s) => (
+            <button
+              key={s.key}
+              onClick={() => setSection(s.key)}
+              className={cn(
+                "flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors",
+                section === s.key
+                  ? "bg-secondary font-semibold text-foreground"
+                  : "text-foreground/85 hover:bg-secondary/60",
+              )}
+            >
+              <span>{s.label}</span>
+              {s.badge === "vkid" && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-muted-foreground">
+                  <span className="rounded bg-primary px-1 py-px text-primary-foreground">VK</span>
+                  ID
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      }
+    >
+      {section === "account" && <AccountSection />}
+      {section === "security" && <SecuritySection />}
+      {section === "privacy" && <PrivacySection />}
+      {section === "notifications" && <NotificationsSection />}
+      {section === "blacklist" && <BlacklistSection />}
+      {section === "apps" && <AppsSection />}
+      {section === "voices" && <VoicesSection />}
+    </AppLayout>
+  );
+};
+
+/* ============================== Shared UI ============================== */
+
+const Card = ({ title, children }: { title?: string; children: ReactNode }) => (
+  <section className="vk-card p-5">
+    {title && <h2 className="mb-4 text-lg font-semibold">{title}</h2>}
+    <div className="flex flex-col">{children}</div>
+  </section>
+);
+
+const Row = ({
+  label,
+  children,
+  divider = true,
+}: {
+  label: string;
+  children: ReactNode;
+  divider?: boolean;
+}) => (
+  <div
+    className={cn(
+      "grid grid-cols-[180px_1fr] items-start gap-6 py-4",
+      divider && "border-b border-border/60 last:border-b-0",
+    )}
+  >
+    <div className="pt-1 text-sm text-muted-foreground">{label}</div>
+    <div className="text-sm">{children}</div>
+  </div>
+);
+
+const SwitchRow = ({
+  icon,
+  title,
+  description,
+  checked,
+  onCheckedChange,
+}: {
+  icon?: ReactNode;
+  title: string;
+  description?: string;
+  checked: boolean;
+  onCheckedChange: (v: boolean) => void;
+}) => (
+  <div className="flex items-center gap-3 border-b border-border/60 py-4 last:border-b-0">
+    {icon && (
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary text-primary">
+        {icon}
+      </div>
+    )}
+    <div className="min-w-0 flex-1">
+      <div className="text-sm font-medium">{title}</div>
+      {description && (
+        <div className="text-xs text-muted-foreground leading-snug mt-0.5">{description}</div>
+      )}
+    </div>
+    <Switch checked={checked} onCheckedChange={onCheckedChange} />
+  </div>
+);
+
+const NotifyRow = ({
+  color,
+  icon,
+  title,
+  description,
+  value,
+}: {
+  color: string;
+  icon: ReactNode;
+  title: string;
+  description: string;
+  value: string;
+}) => (
+  <div className="flex items-center gap-3 border-b border-border/60 py-4 last:border-b-0">
+    <div
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white"
+      style={{ background: color }}
+    >
+      {icon}
+    </div>
+    <div className="min-w-0 flex-1">
+      <div className="text-sm font-medium">{title}</div>
+      <div className="text-xs text-muted-foreground leading-snug mt-0.5">{description}</div>
+    </div>
+    <button className="text-sm font-medium text-primary hover:underline">{value}</button>
+  </div>
+);
+
+/* ============================== Account ============================== */
+
+const AccountSection = () => {
+  const [profileFlags, setProfileFlags] = useState({
+    showPosts: false,
+    disableComments: false,
+    accessibility: false,
+  });
+  const [contentFlags, setContentFlags] = useState({
+    autoplay: true,
+    autoGif: true,
+    suggestStickers: true,
+    showInteresting: true,
+    translatePosts: true,
+  });
+
+  const toggleProfile = (k: keyof typeof profileFlags) =>
+    setProfileFlags((p) => ({ ...p, [k]: !p[k] }));
+  const toggleContent = (k: keyof typeof contentFlags) =>
+    setContentFlags((p) => ({ ...p, [k]: !p[k] }));
+
+  return (
+    <Card title="Общее">
+      <Row label="Меню сайта">
+        <button className="text-primary hover:underline">
+          Настроить отображение пунктов меню
+        </button>
+      </Row>
+      <Row label="Тема">
+        <button className="text-primary hover:underline">Системная</button>
+      </Row>
+
+      <Row label="Настройки профиля">
+        <div className="flex flex-col gap-3">
+          <CheckboxItem
+            checked={profileFlags.showPosts}
+            onChange={() => toggleProfile("showPosts")}
+            label="При открытии профиля показывать мои посты"
+            hint
+          />
+          <CheckboxItem
+            checked={profileFlags.disableComments}
+            onChange={() => toggleProfile("disableComments")}
+            label="Отключить комментирование постов"
+            hint
+          />
+          <CheckboxItem
+            checked={profileFlags.accessibility}
+            onChange={() => toggleProfile("accessibility")}
+            label="Специальные возможности"
+            hint
+          />
+        </div>
+      </Row>
+
+      <Row label="Настройки контента">
+        <div className="flex flex-col gap-3">
+          <CheckboxItem
+            checked={contentFlags.autoplay}
+            onChange={() => toggleContent("autoplay")}
+            label="Автоматически включать видео и музыку в ленте"
+            hint
+          />
+          <CheckboxItem
+            checked={contentFlags.autoGif}
+            onChange={() => toggleContent("autoGif")}
+            label="Автоматически воспроизводить GIF-анимации"
+          />
+          <CheckboxItem
+            checked={contentFlags.suggestStickers}
+            onChange={() => toggleContent("suggestStickers")}
+            label="Подсказывать стикеры в полях ввода"
+          />
+          <CheckboxItem
+            checked={contentFlags.showInteresting}
+            onChange={() => toggleContent("showInteresting")}
+            label="Показывать «Интересное» в историях"
+          />
+          <CheckboxItem
+            checked={contentFlags.translatePosts}
+            onChange={() => toggleContent("translatePosts")}
+            label="Переводить посты"
+            hint
+          />
+
+          <div className="mt-2">
+            <div className="text-xs text-muted-foreground">Порядок постов в ленте новостей:</div>
+            <button className="mt-1 text-sm font-medium text-primary hover:underline">
+              По времени публикации
+            </button>
+          </div>
+          <div>
+            <div className="text-xs text-muted-foreground">Сортировка комментариев:</div>
+            <button className="mt-1 text-sm font-medium text-primary hover:underline">
+              Сначала интересные
+            </button>
+          </div>
+        </div>
+      </Row>
+
+      <Row label="Фильтр нецензурных выражений" divider={false}>
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-foreground/90">Отключён</span>
+          <button className="text-sm font-medium text-primary hover:underline">Изменить</button>
+        </div>
+      </Row>
+    </Card>
+  );
+};
+
+const CheckboxItem = ({
+  checked,
+  onChange,
+  label,
+  hint,
+}: {
+  checked: boolean;
+  onChange: () => void;
+  label: string;
+  hint?: boolean;
+}) => (
+  <label className="flex cursor-pointer items-center gap-3 text-sm">
+    <Checkbox
+      checked={checked}
+      onCheckedChange={onChange}
+      className="h-4 w-4 rounded-[3px] border-muted-foreground/60 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+    />
+    <span className="flex-1 text-foreground/90">{label}</span>
+    {hint && <HelpCircle className="h-4 w-4 text-muted-foreground" />}
+  </label>
+);
+
+/* ============================== Security ============================== */
+
+const SecuritySection = () => (
+  <Card title="Безопасность">
+    <Row label="Пароль">
+      <div className="flex items-center justify-between">
+        <span className="text-foreground/90">Был изменён 4 месяца назад</span>
+        <button className="text-sm font-medium text-primary hover:underline">Изменить</button>
+      </div>
+    </Row>
+    <Row label="Двухфакторная аутентификация">
+      <div className="flex items-center justify-between">
+        <span className="text-foreground/90">Не подключена</span>
+        <button className="text-sm font-medium text-primary hover:underline">Подключить</button>
+      </div>
+    </Row>
+    <Row label="Активные сеансы">
+      <button className="text-sm font-medium text-primary hover:underline">
+        Завершить на других устройствах
+      </button>
+    </Row>
+    <Row label="История входов" divider={false}>
+      <button className="text-sm font-medium text-primary hover:underline">Показать</button>
+    </Row>
+  </Card>
+);
+
+/* ============================== Privacy ============================== */
+
+const PrivacySection = () => {
+  const items: { label: string; value: string; locked?: boolean }[] = [
+    { label: "Кто видит основную информацию моей страницы", value: "Все пользователи" },
+    { label: "Кто видит мою дату рождения", value: "Все пользователи" },
+    { label: "Кто видит мои сохранённые фотографии", value: "Только я", locked: true },
+    { label: "Кто видит список моих сообществ", value: "Все пользователи" },
+    { label: "Кто видит список моих аудиозаписей", value: "Все пользователи" },
+    { label: "Кто видит список моих видеозаписей", value: "Все пользователи" },
+    { label: "Кто видит список моих подарков", value: "Все пользователи" },
+    { label: "Кого видно в списке моих друзей и подписок", value: "Всех друзей" },
+  ];
+
+  return (
+    <Card title="Моя страница">
+      <div className="mb-2 flex items-start gap-3 rounded-xl bg-secondary/60 p-4">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
+          <Heart className="h-5 w-5" />
+        </div>
+        <div className="flex-1 text-sm">
+          <div className="font-semibold">Неделя без непрошеного внимания</div>
+          <p className="mt-1 text-muted-foreground leading-snug">
+            Если нужна пауза в общении с незнакомцами, попробуйте режим «Личное пространство»
+          </p>
+          <button className="mt-3 text-sm font-medium text-primary hover:underline">
+            Подробнее
+          </button>
+        </div>
+      </div>
+
+      {items.map((i) => (
+        <div
+          key={i.label}
+          className="grid grid-cols-[1fr_auto] items-center gap-4 border-b border-border/60 py-4 last:border-b-0"
+        >
+          <div className="text-sm text-muted-foreground">{i.label}</div>
+          <button className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
+            {i.locked && <Lock className="h-3.5 w-3.5" />}
+            {i.value}
+          </button>
+        </div>
+      ))}
+    </Card>
+  );
+};
+
+/* ============================== Notifications ============================== */
+
+const NotificationsSection = () => {
+  const [flags, setFlags] = useState({
+    instant: true,
+    sound: true,
+    showText: true,
+  });
+  const toggle = (k: keyof typeof flags) => setFlags((p) => ({ ...p, [k]: !p[k] }));
+
+  return (
+    <div className="flex flex-col gap-3">
+      <Card title="Уведомления на сайте">
+        <SwitchRow
+          icon={<Zap className="h-4 w-4" />}
+          title="Показывать мгновенные уведомления"
+          checked={flags.instant}
+          onCheckedChange={() => toggle("instant")}
+        />
+        <SwitchRow
+          icon={<Volume2 className="h-4 w-4" />}
+          title="Получать уведомления со звуком"
+          checked={flags.sound}
+          onCheckedChange={() => toggle("sound")}
+        />
+        <SwitchRow
+          icon={<MessageSquare className="h-4 w-4" />}
+          title="Показывать текст сообщений"
+          checked={flags.showText}
+          onCheckedChange={() => toggle("showText")}
+        />
+        <div className="flex items-center gap-3 pt-4">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary text-primary">
+            <Bell className="h-4 w-4" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-medium">Браузерные уведомления</div>
+            <div className="text-xs text-muted-foreground leading-snug mt-0.5">
+              Уведомления, которые вы будете получать, можно настроить ниже
+            </div>
+          </div>
+          <button className="text-sm font-medium text-primary hover:underline">Отключены</button>
+        </div>
+      </Card>
+
+      <Card title="Сообщения">
+        <NotifyRow
+          color="hsl(140 60% 45%)"
+          icon={<MessageSquare className="h-4 w-4" />}
+          title="Личные сообщения"
+          description="Уведомление о том, что вас упомянули в чате"
+          value="Все"
+        />
+        <NotifyRow
+          color="hsl(0 75% 60%)"
+          icon={<MessageSquare className="h-4 w-4" />}
+          title="Напоминания о сообщениях"
+          description="Уведомление о том, что у вас есть непрочитанные сообщения или упоминания в чатах"
+          value="Все"
+        />
+      </Card>
+
+      <Card title="Обратная связь">
+        <NotifyRow
+          color="hsl(345 80% 60%)"
+          icon={<Heart className="h-4 w-4" />}
+          title="Реакции и лайки"
+          description="Уведомления о реакциях на ваши посты, а также лайках к комментариям, фото, видео и историям"
+          value="Все"
+        />
+        <NotifyRow
+          color="hsl(210 90% 55%)"
+          icon={<Share2 className="h-4 w-4" />}
+          title="Поделились"
+          description="Когда вашими записями делятся друзья и сообщества"
+          value="Все"
+        />
+      </Card>
+    </div>
+  );
+};
+
+/* ============================== Blacklist ============================== */
+
+const BlacklistSection = () => (
+  <Card>
+    <div className="mb-4 flex items-center justify-between gap-3">
+      <h2 className="text-lg font-semibold">Чёрный список</h2>
+      <button className="vk-pill rounded-lg px-4">Добавить в чёрный список</button>
+    </div>
+    <div className="relative mb-6">
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <input
+        type="text"
+        placeholder="Поиск"
+        className="h-10 w-full rounded-lg bg-secondary pl-9 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+      />
+    </div>
+    <div className="flex flex-col items-center px-4 py-10 text-center">
+      <div className="text-base font-semibold">Ваш чёрный список пуст</div>
+      <p className="mt-2 max-w-md text-sm text-muted-foreground leading-relaxed">
+        Люди из чёрного списка не могут просматривать вашу страницу, оставлять комментарии и
+        отправлять вам личные сообщения
+      </p>
+    </div>
+  </Card>
+);
+
+/* ============================== Apps ============================== */
+
+const AppsSection = () => (
+  <Card title="Настройки приложений">
+    <Row label="Подключённые приложения">
+      <span className="text-foreground/90">Нет подключённых приложений</span>
+    </Row>
+    <Row label="Игровые приложения" divider={false}>
+      <button className="text-sm font-medium text-primary hover:underline">Управлять</button>
+    </Row>
+  </Card>
+);
+
+/* ============================== Voices ============================== */
+
+const VoicesSection = () => (
+  <div className="flex flex-col gap-3">
+    <Card title="Состояние личного счёта">
+      <p className="text-sm text-foreground/90 leading-relaxed">
+        Голоса — универсальная условная единица для приобретения платных возможностей приложений
+        ВКонтакте, а также подарков и стикеров. Голосами нельзя оплатить рекламу.
+      </p>
+      <p className="mt-3 text-sm text-foreground/90 leading-relaxed">
+        Обратите внимание, что право использования голосов предоставляется на условиях{" "}
+        <a href="#!" className="text-primary hover:underline">
+          Лицензионного соглашения
+        </a>
+        . Возврат средств невозможен.
+      </p>
+
+      <div className="mt-5">
+        <Row label="На вашем счёте">
+          <span className="text-foreground/90">0 голосов</span>
+        </Row>
+        <Row label="Способы оплаты">
+          <button className="text-sm font-medium text-primary hover:underline">Показать</button>
+        </Row>
+        <Row label="Баланс" divider={false}>
+          <button className="vk-pill gap-2 rounded-lg px-4">
+            <Plus className="h-4 w-4" />
+            Пополнить баланс
+          </button>
+        </Row>
+      </div>
+
+      <div className="mt-4 flex flex-col items-start gap-3 border-t border-border/60 pt-4">
+        <button className="text-sm font-medium text-primary hover:underline">
+          Получить голоса у партнёров
+        </button>
+        <button className="text-sm font-medium text-primary hover:underline">
+          Активировать промокод
+        </button>
+        <div className="pt-2 text-xs text-muted-foreground">
+          Если у вас возникли проблемы, обратитесь в{" "}
+          <a href="#!" className="text-primary hover:underline">
+            платёжную Поддержку
+          </a>
+          .
+        </div>
+      </div>
+    </Card>
+
+    <Card>
+      <div className="mb-3 inline-flex w-fit rounded-md bg-secondary px-2.5 py-1 text-xs font-semibold">
+        Подписки
+      </div>
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-primary">
+          <Volume2 className="h-5 w-5" />
+        </div>
+        <div className="flex-1 text-sm font-medium">Подписка на музыку</div>
+        <button className="vk-pill rounded-lg px-4">Оформить</button>
+      </div>
+    </Card>
+  </div>
+);
+
+export default Settings;

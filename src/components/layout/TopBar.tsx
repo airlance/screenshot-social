@@ -58,7 +58,7 @@ export const TopBar = () => {
             <div className="px-2 pb-2">
               <DropdownMenuItem className="gap-3 py-2.5"><Wallet className="w-4 h-4 text-primary" />Голоса <span className="ml-auto text-muted-foreground">0</span></DropdownMenuItem>
               <DropdownMenuItem className="gap-3 py-2.5"><QrCode className="w-4 h-4 text-primary" />Вход по QR-коду</DropdownMenuItem>
-              <DropdownMenuItem className="gap-3 py-2.5"><Settings className="w-4 h-4 text-primary" />Настройки</DropdownMenuItem>
+              <DropdownMenuItem asChild className="gap-3 py-2.5"><Link to="/settings"><Settings className="w-4 h-4 text-primary" />Настройки</Link></DropdownMenuItem>
               <DropdownMenuItem className="gap-3 py-2.5"><Palette className="w-4 h-4 text-primary" />Тема: <span className="text-primary">Системная</span></DropdownMenuItem>
               <DropdownMenuItem className="gap-3 py-2.5"><HelpCircle className="w-4 h-4 text-primary" />Помощь</DropdownMenuItem>
               <DropdownMenuItem className="gap-3 py-2.5"><LogOut className="w-4 h-4 text-primary" />Выйти</DropdownMenuItem>
