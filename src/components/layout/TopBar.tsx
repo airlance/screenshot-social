@@ -1,7 +1,8 @@
-import { Search, Bell, ChevronDown, HelpCircle, LogOut, Plus, QrCode, Settings, Wallet, Palette, UserRound } from "lucide-react";
+import { Search, Bell, ChevronDown, HelpCircle, LogOut, Plus, QrCode, Settings, Wallet, Palette, UserRound, AlertCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PlayerPopover } from "@/components/player/PlayerPopover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export const TopBar = () => {
   return (
