@@ -23,6 +23,7 @@ import Bookmarks from "./pages/Bookmarks.tsx";
 import ArticleEditor from "./pages/ArticleEditor.tsx";
 import SimplePage from "./pages/SimplePage.tsx";
 import Services from "./pages/Services.tsx";
+import Settings from "./pages/Settings.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { PlayerProvider } from "./context/PlayerContext";
 import { StoriesProvider } from "./context/StoriesContext";
@@ -58,6 +59,7 @@ const App = () => (
           <Route path="/market" element={<Market />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/services" element={<Services />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="/voices" element={<SimplePage title="Голоса" />} />
           <Route path="/bookmarks" element={<Bookmarks />} />
           <Route path="/article/new" element={<ArticleEditor />} />
