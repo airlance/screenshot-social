@@ -53,43 +53,86 @@ export const TopBar = () => {
 
         <Popover>
           <PopoverTrigger asChild>
-            <button className="w-10 h-10 rounded-full hover:bg-secondary flex items-center justify-center transition-colors">
+            <button className="relative w-10 h-10 rounded-full hover:bg-secondary flex items-center justify-center transition-colors">
               <Bell className="w-5 h-5 text-foreground/80" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+                  {unreadCount}
+                </span>
+              )}
             </button>
           </PopoverTrigger>
           <PopoverContent
             align="end"
             sideOffset={10}
-            className="w-[400px] rounded-xl border-border bg-popover p-0 shadow-elevated"
+            className="w-[420px] rounded-xl border-border bg-popover p-0 shadow-elevated"
           >
             <div className="flex items-center justify-between px-4 py-3">
-              <div className="text-sm font-semibold">Ваш профиль</div>
-              <Link to="/settings" className="rounded-md bg-secondary px-3 py-1.5 text-xs font-medium hover:bg-accent">
-                Настройки
-              </Link>
-            </div>
-            <div className="px-4 pb-2 text-[11px] font-bold tracking-wider text-muted-foreground">
-              ПРОСМОТРЕННЫЕ
-            </div>
-            <div className="flex items-start gap-3 px-4 pb-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" style={{ background: "hsl(28 95% 55%)" }}>
-                <AlertCircle className="h-5 w-5 text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-start justify-between gap-3">
-                  <p className="text-sm leading-snug">
-                    <span className="font-semibold">Защитите свой аккаунт.</span> Соблюдайте простые правила, и ваши данные будут в безопасности.
-                  </p>
-                  <span className="shrink-0 text-xs text-muted-foreground">5 мин назад</span>
-                </div>
-                <div className="mt-2 flex items-center gap-3">
-                  <button className="vk-pill rounded-lg px-3 !py-1 text-xs">Защитить аккаунт</button>
-                  <button className="text-xs font-medium text-primary hover:underline">Подробности</button>
-                </div>
+              <div className="text-sm font-semibold">Уведомления</div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => POPUP_ITEMS.forEach((i) => !isRead(i.id) && markRead(i.id))}
+                  disabled={unreadCount === 0}
+                  className="rounded-md px-2 py-1 text-xs font-medium text-primary hover:bg-secondary disabled:opacity-50"
+                >
+                  Прочитать все
+                </button>
+                <Link to="/settings" className="rounded-md bg-secondary px-3 py-1.5 text-xs font-medium hover:bg-accent">
+                  Настройки
+                </Link>
               </div>
             </div>
-            <div className="px-4 py-4 text-center text-xs text-muted-foreground">
-              Показаны последние новости
+            <div className="px-2 pb-2">
+              {POPUP_ITEMS.map((item) => {
+                const read = isRead(item.id);
+                return (
+                  <div
+                    key={item.id}
+                    className={cn(
+                      "group relative flex items-start gap-3 rounded-lg px-3 py-3 transition-colors hover:bg-secondary/40",
+                      !read && "bg-primary/5",
+                    )}
+                  >
+                    {!read && (
+                      <span className="absolute left-0.5 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-primary" />
+                    )}
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" style={{ background: item.iconBg }}>
+                      <AlertCircle className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm leading-snug">{item.title}</p>
+                        <div className="flex shrink-0 items-center gap-1">
+                          <span className="text-xs text-muted-foreground">{item.time}</span>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button
+                                className="rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-secondary group-hover:opacity-100 data-[state=open]:opacity-100"
+                                aria-label="Действия"
+                              >
+                                <MoreHorizontal className="h-4 w-4" />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56">
+                              {read ? (
+                                <DropdownMenuItem onClick={() => markUnread(item.id)} className="gap-2">
+                                  <Check className="h-4 w-4" />
+                                  Отметить как непрочитанное
+                                </DropdownMenuItem>
+                              ) : (
+                                <DropdownMenuItem onClick={() => markRead(item.id)} className="gap-2">
+                                  <CheckCheck className="h-4 w-4" />
+                                  Отметить как прочитанное
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
             <Link to="/notifications" className="block border-t border-border py-3.5 text-center text-sm font-medium hover:bg-secondary/50">
               Показать все
