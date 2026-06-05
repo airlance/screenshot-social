@@ -361,6 +361,143 @@ const PrivacySection = () => {
 
 /* ============================== Notifications ============================== */
 
+type Frequency = "instant" | "daily" | "weekly" | "off";
+
+const FREQ_LABEL: Record<Frequency, string> = {
+  instant: "Мгновенно",
+  daily: "Ежедневная сводка",
+  weekly: "Еженедельная сводка",
+  off: "Отключено",
+};
+
+type NotifKey =
+  | "messages"
+  | "mentions"
+  | "likes"
+  | "shares"
+  | "comments"
+  | "friends"
+  | "groups";
+
+type NotifPref = { enabled: boolean; frequency: Frequency };
+
+const DEFAULT_PREFS: Record<NotifKey, NotifPref> = {
+  messages: { enabled: true, frequency: "instant" },
+  mentions: { enabled: true, frequency: "instant" },
+  likes: { enabled: true, frequency: "daily" },
+  shares: { enabled: true, frequency: "daily" },
+  comments: { enabled: true, frequency: "instant" },
+  friends: { enabled: true, frequency: "instant" },
+  groups: { enabled: false, frequency: "weekly" },
+};
+
+const NOTIF_TYPES: {
+  key: NotifKey;
+  title: string;
+  description: string;
+  icon: ReactNode;
+  color: string;
+}[] = [
+  {
+    key: "messages",
+    title: "Личные сообщения",
+    description: "Новые сообщения в ваших личных чатах",
+    icon: <MessageSquare className="h-4 w-4" />,
+    color: "hsl(140 60% 45%)",
+  },
+  {
+    key: "mentions",
+    title: "Упоминания",
+    description: "Когда вас упоминают в постах, комментариях или чатах",
+    icon: <AtSign className="h-4 w-4" />,
+    color: "hsl(200 80% 55%)",
+  },
+  {
+    key: "likes",
+    title: "Реакции и лайки",
+    description: "Реакции на ваши посты, комментарии, фото и видео",
+    icon: <Heart className="h-4 w-4" />,
+    color: "hsl(345 80% 60%)",
+  },
+  {
+    key: "shares",
+    title: "Поделились",
+    description: "Когда вашими записями делятся друзья и сообщества",
+    icon: <Share2 className="h-4 w-4" />,
+    color: "hsl(210 90% 55%)",
+  },
+  {
+    key: "comments",
+    title: "Комментарии",
+    description: "Новые комментарии к вашим постам и фото",
+    icon: <MessageSquare className="h-4 w-4" />,
+    color: "hsl(0 75% 60%)",
+  },
+  {
+    key: "friends",
+    title: "Друзья",
+    description: "Заявки в друзья и новые подписчики",
+    icon: <UserPlus className="h-4 w-4" />,
+    color: "hsl(265 70% 55%)",
+  },
+  {
+    key: "groups",
+    title: "Сообщества",
+    description: "Новости и публикации в ваших сообществах",
+    icon: <UsersIcon className="h-4 w-4" />,
+    color: "hsl(28 90% 55%)",
+  },
+];
+
+const NotifPrefRow = ({
+  icon,
+  color,
+  title,
+  description,
+  pref,
+  onChange,
+}: {
+  icon: ReactNode;
+  color: string;
+  title: string;
+  description: string;
+  pref: NotifPref;
+  onChange: (next: NotifPref) => void;
+}) => (
+  <div className="flex items-center gap-3 border-b border-border/60 py-4 last:border-b-0">
+    <div
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white"
+      style={{ background: color }}
+    >
+      {icon}
+    </div>
+    <div className="min-w-0 flex-1">
+      <div className="text-sm font-medium">{title}</div>
+      <div className="text-xs text-muted-foreground leading-snug mt-0.5">{description}</div>
+    </div>
+    <Select
+      value={pref.frequency}
+      onValueChange={(v) => onChange({ ...pref, frequency: v as Frequency })}
+      disabled={!pref.enabled}
+    >
+      <SelectTrigger className="h-9 w-[190px] text-sm">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {(Object.keys(FREQ_LABEL) as Frequency[]).map((f) => (
+          <SelectItem key={f} value={f}>
+            {FREQ_LABEL[f]}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+    <Switch
+      checked={pref.enabled}
+      onCheckedChange={(v) => onChange({ ...pref, enabled: v })}
+    />
+  </div>
+);
+
 const NotificationsSection = () => {
   const [flags, setFlags] = useState({
     instant: true,
@@ -368,6 +505,19 @@ const NotificationsSection = () => {
     showText: true,
   });
   const toggle = (k: keyof typeof flags) => setFlags((p) => ({ ...p, [k]: !p[k] }));
+
+  const [prefs, setPrefs] = useState<Record<NotifKey, NotifPref>>(DEFAULT_PREFS);
+  const updatePref = (k: NotifKey, next: NotifPref) =>
+    setPrefs((p) => ({ ...p, [k]: next }));
+
+  const setAllFrequency = (f: Frequency) =>
+    setPrefs((p) => {
+      const next = { ...p };
+      (Object.keys(next) as NotifKey[]).forEach((k) => {
+        next[k] = { ...next[k], frequency: f };
+      });
+      return next;
+    });
 
   return (
     <div className="flex flex-col gap-3">
@@ -404,42 +554,45 @@ const NotificationsSection = () => {
         </div>
       </Card>
 
-      <Card title="Сообщения">
-        <NotifyRow
-          color="hsl(140 60% 45%)"
-          icon={<MessageSquare className="h-4 w-4" />}
-          title="Личные сообщения"
-          description="Уведомление о том, что вас упомянули в чате"
-          value="Все"
-        />
-        <NotifyRow
-          color="hsl(0 75% 60%)"
-          icon={<MessageSquare className="h-4 w-4" />}
-          title="Напоминания о сообщениях"
-          description="Уведомление о том, что у вас есть непрочитанные сообщения или упоминания в чатах"
-          value="Все"
-        />
-      </Card>
-
-      <Card title="Обратная связь">
-        <NotifyRow
-          color="hsl(345 80% 60%)"
-          icon={<Heart className="h-4 w-4" />}
-          title="Реакции и лайки"
-          description="Уведомления о реакциях на ваши посты, а также лайках к комментариям, фото, видео и историям"
-          value="Все"
-        />
-        <NotifyRow
-          color="hsl(210 90% 55%)"
-          icon={<Share2 className="h-4 w-4" />}
-          title="Поделились"
-          description="Когда вашими записями делятся друзья и сообщества"
-          value="Все"
-        />
+      <Card title="Типы уведомлений и частота">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/60">
+          <p className="text-xs text-muted-foreground max-w-md">
+            Выберите, о чём уведомлять и как часто получать сводки. Изменения применяются ко всем
+            устройствам.
+          </p>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">Для всех:</span>
+            <Select onValueChange={(v) => setAllFrequency(v as Frequency)}>
+              <SelectTrigger className="h-8 w-[170px] text-xs">
+                <SelectValue placeholder="Применить ко всем" />
+              </SelectTrigger>
+              <SelectContent>
+                {(Object.keys(FREQ_LABEL) as Frequency[]).map((f) => (
+                  <SelectItem key={f} value={f}>
+                    {FREQ_LABEL[f]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        {NOTIF_TYPES.map((t) => (
+          <NotifPrefRow
+            key={t.key}
+            icon={t.icon}
+            color={t.color}
+            title={t.title}
+            description={t.description}
+            pref={prefs[t.key]}
+            onChange={(next) => updatePref(t.key, next)}
+          />
+        ))}
       </Card>
     </div>
   );
 };
+
+
 
 /* ============================== Blacklist ============================== */
 
