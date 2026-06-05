@@ -2,7 +2,8 @@ import { useState, type ReactNode } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, HelpCircle, Zap, Volume2, MessageSquare, Bell, Heart, Share2, Plus, Lock } from "lucide-react";
+import { Search, HelpCircle, Zap, Volume2, MessageSquare, Bell, Heart, Share2, Plus, Lock, UserPlus, AtSign, Users as UsersIcon } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 type SectionKey =
