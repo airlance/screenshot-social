@@ -41,6 +41,7 @@ const App = () => (
       <StoriesProvider>
       <RepostsProvider>
       <MessengerProvider>
+      <NotificationsProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
