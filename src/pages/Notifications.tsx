@@ -1,8 +1,15 @@
 import { useState, type ReactNode } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Link } from "react-router-dom";
-import { AlertCircle, UserPlus, Heart, MessageSquare, Share2, Gift, AtSign, Users as UsersIcon } from "lucide-react";
+import { AlertCircle, UserPlus, Heart, MessageSquare, Share2, Gift, AtSign, Users as UsersIcon, MoreHorizontal, Check, CheckCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useNotifications } from "@/context/NotificationsContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import avatar2 from "@/assets/avatar-2.jpg";
 import avatar3 from "@/assets/avatar-3.jpg";
 import avatar4 from "@/assets/avatar-4.jpg";
