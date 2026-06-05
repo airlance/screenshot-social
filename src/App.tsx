@@ -30,6 +30,7 @@ import { PlayerProvider } from "./context/PlayerContext";
 import { StoriesProvider } from "./context/StoriesContext";
 import { RepostsProvider } from "./context/RepostsContext";
 import { MessengerProvider } from "./context/MessengerContext";
+import { NotificationsProvider } from "./context/NotificationsContext";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
       <StoriesProvider>
       <RepostsProvider>
       <MessengerProvider>
+      <NotificationsProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
@@ -70,6 +72,7 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
+      </NotificationsProvider>
       </MessengerProvider>
       </RepostsProvider>
       </StoriesProvider>

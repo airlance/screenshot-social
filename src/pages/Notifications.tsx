@@ -1,8 +1,15 @@
 import { useState, type ReactNode } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Link } from "react-router-dom";
-import { AlertCircle, UserPlus, Heart, MessageSquare, Share2, Gift, AtSign, Users as UsersIcon } from "lucide-react";
+import { AlertCircle, UserPlus, Heart, MessageSquare, Share2, Gift, AtSign, Users as UsersIcon, MoreHorizontal, Check, CheckCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useNotifications } from "@/context/NotificationsContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import avatar2 from "@/assets/avatar-2.jpg";
 import avatar3 from "@/assets/avatar-3.jpg";
 import avatar4 from "@/assets/avatar-4.jpg";
@@ -202,38 +209,58 @@ const Notifications = () => {
   const [section, setSection] = useState<SectionKey>("profile");
   const current = SECTIONS.find((s) => s.key === section)!;
   const items = ITEMS[section];
+  const { isRead, toggleRead, markRead, markUnread } = useNotifications();
+  const unreadIds = items.filter((it) => !isRead(it.id)).map((it) => it.id);
 
   return (
     <AppLayout
       variant="wide"
       right={
         <div className="vk-card p-2">
-          {SECTIONS.map((s) => (
-            <button
-              key={s.key}
-              onClick={() => setSection(s.key)}
-              className={cn(
-                "flex w-full items-center rounded-lg px-3 py-2.5 text-sm transition-colors",
-                section === s.key
-                  ? "bg-secondary font-semibold text-foreground"
-                  : "text-foreground/85 hover:bg-secondary/60",
-              )}
-            >
-              {s.label}
-            </button>
-          ))}
+          {SECTIONS.map((s) => {
+            const sectionItems = ITEMS[s.key];
+            const unread = sectionItems.filter((it) => !isRead(it.id)).length;
+            return (
+              <button
+                key={s.key}
+                onClick={() => setSection(s.key)}
+                className={cn(
+                  "flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors",
+                  section === s.key
+                    ? "bg-secondary font-semibold text-foreground"
+                    : "text-foreground/85 hover:bg-secondary/60",
+                )}
+              >
+                <span>{s.label}</span>
+                {unread > 0 && (
+                  <span className="ml-2 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground">
+                    {unread}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       }
     >
       <section className="vk-card overflow-hidden rounded-xl">
         <header className="flex items-center justify-between px-5 py-4">
           <h1 className="text-lg font-semibold">Уведомления</h1>
-          <Link
-            to="/settings"
-            className="text-sm font-medium text-primary hover:underline"
-          >
-            Настройки
-          </Link>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => unreadIds.forEach((id) => markRead(id))}
+              disabled={unreadIds.length === 0}
+              className="text-sm font-medium text-primary hover:underline disabled:opacity-50 disabled:no-underline"
+            >
+              Прочитать все
+            </button>
+            <Link
+              to="/settings"
+              className="text-sm font-medium text-primary hover:underline"
+            >
+              Настройки
+            </Link>
+          </div>
         </header>
 
         <div className="px-5 pb-2 text-[11px] font-bold tracking-wider text-muted-foreground">
@@ -241,26 +268,60 @@ const Notifications = () => {
         </div>
 
         <ul className="px-2 pb-3">
-          {items.map((it) => (
-            <li
-              key={it.id}
-              className="flex items-start gap-3 rounded-lg px-3 py-3 hover:bg-secondary/40 transition-colors"
-            >
-              <div
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full overflow-hidden"
-                style={{ background: it.iconBg }}
+          {items.map((it) => {
+            const read = isRead(it.id);
+            return (
+              <li
+                key={it.id}
+                className={cn(
+                  "group relative flex items-start gap-3 rounded-lg px-3 py-3 transition-colors hover:bg-secondary/40",
+                  !read && "bg-primary/5",
+                )}
               >
-                {it.icon}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-start justify-between gap-3">
-                  <p className="text-sm leading-snug text-foreground/95">{it.title}</p>
-                  <span className="shrink-0 text-xs text-muted-foreground">{it.time}</span>
+                {!read && (
+                  <span className="absolute left-1 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-primary" />
+                )}
+                <div
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full overflow-hidden"
+                  style={{ background: it.iconBg }}
+                >
+                  {it.icon}
                 </div>
-                {it.actions}
-              </div>
-            </li>
-          ))}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-sm leading-snug text-foreground/95">{it.title}</p>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <span className="text-xs text-muted-foreground">{it.time}</span>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            className="rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-secondary group-hover:opacity-100 data-[state=open]:opacity-100"
+                            aria-label="Действия"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56">
+                          {read ? (
+                            <DropdownMenuItem onClick={() => markUnread(it.id)} className="gap-2">
+                              <Check className="h-4 w-4" />
+                              Отметить как непрочитанное
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem onClick={() => markRead(it.id)} className="gap-2">
+                              <CheckCheck className="h-4 w-4" />
+                              Отметить как прочитанное
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                  {it.actions}
+                </div>
+              </li>
+            );
+          })}
         </ul>
 
         <div className="border-t border-border/60 px-5 py-5 text-center text-sm text-muted-foreground">
