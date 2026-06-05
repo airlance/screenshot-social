@@ -30,6 +30,8 @@ const POPUP_ITEMS = [
 ];
 
 export const TopBar = () => {
+  const { isRead, markRead, markUnread } = useNotifications();
+  const unreadCount = POPUP_ITEMS.filter((i) => !isRead(i.id)).length;
   return (
     <header className="sticky top-0 z-40 h-[60px] bg-background/85 backdrop-blur-xl border-b border-border">
       <div className="max-w-[1280px] mx-auto h-full px-4 flex items-center gap-4">
