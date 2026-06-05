@@ -1,8 +1,33 @@
-import { Search, Bell, ChevronDown, HelpCircle, LogOut, Plus, QrCode, Settings, Wallet, Palette, UserRound, AlertCircle } from "lucide-react";
+import { Search, Bell, ChevronDown, HelpCircle, LogOut, Plus, QrCode, Settings, Wallet, Palette, UserRound, AlertCircle, MoreHorizontal, Check, CheckCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PlayerPopover } from "@/components/player/PlayerPopover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useNotifications } from "@/context/NotificationsContext";
+import { cn } from "@/lib/utils";
+
+const POPUP_ITEMS = [
+  {
+    id: "protect",
+    title: (
+      <>
+        <span className="font-semibold">Защитите свой аккаунт.</span> Соблюдайте простые правила, и ваши данные будут в безопасности.
+      </>
+    ),
+    time: "5 мин назад",
+    iconBg: "hsl(28 95% 55%)",
+  },
+  {
+    id: "f1",
+    title: (
+      <>
+        <span className="font-semibold">Анна Соколова</span> подписалась на вас
+      </>
+    ),
+    time: "1 ч назад",
+    iconBg: "hsl(210 90% 55%)",
+  },
+];
 
 export const TopBar = () => {
   return (
