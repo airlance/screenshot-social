@@ -123,6 +123,7 @@ const userArticles = [
 type AvatarStep = "upload" | "crop" | "thumb" | "finish";
 
 const Profile = () => {
+  const { activeAccount } = useAccounts();
   const [avatar, setAvatar] = useState<string | null>(null);
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const [coverMenuOpen, setCoverMenuOpen] = useState(false);
@@ -136,6 +137,15 @@ const Profile = () => {
   const myStories = users.find((u) => u.isMe)?.items ?? [];
   const [createStoryOpen, setCreateStoryOpen] = useState(false);
   const [storyViewerOpen, setStoryViewerOpen] = useState(false);
+
+  const accountPosts = useMemo(
+    () =>
+      userPosts.map((p) => ({
+        ...p,
+        author: { ...p.author, name: activeAccount.name },
+      })),
+    [activeAccount],
+  );
 
   const sortedPosts = useMemo(() => {
     const arr = [...userPosts];
