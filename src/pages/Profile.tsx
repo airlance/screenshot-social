@@ -299,8 +299,8 @@ const Profile = () => {
             <DropdownMenu open={avatarMenuOpen} onOpenChange={setAvatarMenuOpen}>
               <DropdownMenuTrigger asChild>
                 <button className="relative block rounded-full outline-none">
-                  <div className="h-40 w-40 overflow-hidden rounded-full border-4 border-background bg-muted ring-4 ring-background">
-                    {avatar ? <img src={avatar} alt="Mark Roberts" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center bg-muted"><div className="h-20 w-20 rounded-full bg-foreground/75 opacity-80 [clip-path:polygon(50%_0,62%_26%,88%_36%,66%_54%,68%_84%,50%_68%,32%_84%,34%_54%,12%_36%,38%_26%)]" /></div>}
+                  <div className="h-40 w-40 overflow-hidden rounded-full border-4 border-background ring-4 ring-background" style={{ background: avatar ? undefined : activeAccount.avatarColor }}>
+                    {avatar ? <img src={avatar} alt={activeAccount.name} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-white text-4xl font-semibold">{getInitials(activeAccount.name)}</div>}
                   </div>
                   <span className="absolute bottom-3 right-2 flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-primary text-primary-foreground"><Plus className="h-4 w-4" strokeWidth={3} /></span>
                 </button>
