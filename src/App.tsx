@@ -43,6 +43,7 @@ const App = () => (
       <PlayerProvider>
       <StoriesProvider>
       <RepostsProvider>
+      <AccountsProvider>
       <MessengerProvider>
       <NotificationsProvider>
       <Toaster />
@@ -50,6 +51,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+
           <Route path="/feed" element={<Feed />} />
           <Route path="/messenger" element={<Messenger />} />
           <Route path="/calls" element={<Calls />} />
