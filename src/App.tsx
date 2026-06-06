@@ -25,12 +25,15 @@ import SimplePage from "./pages/SimplePage.tsx";
 import Services from "./pages/Services.tsx";
 import Settings from "./pages/Settings.tsx";
 import Notifications from "./pages/Notifications.tsx";
+import Login from "./pages/Login.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { PlayerProvider } from "./context/PlayerContext";
 import { StoriesProvider } from "./context/StoriesContext";
 import { RepostsProvider } from "./context/RepostsContext";
 import { MessengerProvider } from "./context/MessengerContext";
 import { NotificationsProvider } from "./context/NotificationsContext";
+import { AccountsProvider } from "./context/AccountsContext";
+
 
 const queryClient = new QueryClient();
 
@@ -40,6 +43,7 @@ const App = () => (
       <PlayerProvider>
       <StoriesProvider>
       <RepostsProvider>
+      <AccountsProvider>
       <MessengerProvider>
       <NotificationsProvider>
       <Toaster />
@@ -47,6 +51,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+
           <Route path="/feed" element={<Feed />} />
           <Route path="/messenger" element={<Messenger />} />
           <Route path="/calls" element={<Calls />} />
@@ -74,6 +80,7 @@ const App = () => (
       </BrowserRouter>
       </NotificationsProvider>
       </MessengerProvider>
+      </AccountsProvider>
       </RepostsProvider>
       </StoriesProvider>
       </PlayerProvider>
