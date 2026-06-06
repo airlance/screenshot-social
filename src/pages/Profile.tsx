@@ -148,11 +148,11 @@ const Profile = () => {
   );
 
   const sortedPosts = useMemo(() => {
-    const arr = [...userPosts];
+    const arr = [...accountPosts];
     if (feedSort === "popular") arr.sort((a, b) => b.stats.likes - a.stats.likes);
-    else arr.sort((a, b) => b.createdAt - a.createdAt);
+    else arr.sort((a, b) => (b as any).createdAt - (a as any).createdAt);
     return arr;
-  }, [feedSort]);
+  }, [feedSort, accountPosts]);
 
   const profilePhotos = useMemo(() => [postPhoto1, postPhoto2, postPhoto3, postPhoto4, photo1, post1], []);
 
