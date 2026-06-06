@@ -33,7 +33,8 @@ const POPUP_ITEMS = [
 export const TopBar = () => {
   const { isRead, markRead, markUnread } = useNotifications();
   const { accounts, activeId, activeAccount, switchAccount, removeAccount } = useAccounts();
-  const unreadCount = POPUP_ITEMS.filter((i) => !isRead(i.id)).length;
+  const popupItems = POPUP_ITEMS.map((i) => ({ ...i, id: `${activeAccount.id}:${i.id}` }));
+  const unreadCount = popupItems.filter((i) => !isRead(i.id)).length;
   return (
     <header className="sticky top-0 z-40 h-[60px] bg-background/85 backdrop-blur-xl border-b border-border">
       <div className="max-w-[1280px] mx-auto h-full px-4 flex items-center gap-4">
@@ -73,7 +74,7 @@ export const TopBar = () => {
               <div className="text-sm font-semibold">Уведомления</div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => POPUP_ITEMS.forEach((i) => !isRead(i.id) && markRead(i.id))}
+                  onClick={() => popupItems.forEach((i) => !isRead(i.id) && markRead(i.id))}
                   disabled={unreadCount === 0}
                   className="rounded-md px-2 py-1 text-xs font-medium text-primary hover:bg-secondary disabled:opacity-50"
                 >
@@ -85,7 +86,7 @@ export const TopBar = () => {
               </div>
             </div>
             <div className="px-2 pb-2">
-              {POPUP_ITEMS.map((item) => {
+              {popupItems.map((item) => {
                 const read = isRead(item.id);
                 return (
                   <div

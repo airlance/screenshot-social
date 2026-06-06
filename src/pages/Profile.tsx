@@ -31,6 +31,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useStories } from "@/context/StoriesContext";
+import { useAccounts, getInitials } from "@/context/AccountsContext";
 import { CreateStoryModal } from "@/components/feed/CreateStoryModal";
 import { StoryViewer } from "@/components/feed/StoryViewer";
 import photo1 from "@/assets/photo-1.jpg";
@@ -122,6 +123,7 @@ const userArticles = [
 type AvatarStep = "upload" | "crop" | "thumb" | "finish";
 
 const Profile = () => {
+  const { activeAccount } = useAccounts();
   const [avatar, setAvatar] = useState<string | null>(null);
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const [coverMenuOpen, setCoverMenuOpen] = useState(false);
@@ -136,12 +138,21 @@ const Profile = () => {
   const [createStoryOpen, setCreateStoryOpen] = useState(false);
   const [storyViewerOpen, setStoryViewerOpen] = useState(false);
 
+  const accountPosts = useMemo(
+    () =>
+      userPosts.map((p) => ({
+        ...p,
+        author: { ...p.author, name: activeAccount.name },
+      })),
+    [activeAccount],
+  );
+
   const sortedPosts = useMemo(() => {
-    const arr = [...userPosts];
+    const arr = [...accountPosts];
     if (feedSort === "popular") arr.sort((a, b) => b.stats.likes - a.stats.likes);
-    else arr.sort((a, b) => b.createdAt - a.createdAt);
+    else arr.sort((a, b) => (b as any).createdAt - (a as any).createdAt);
     return arr;
-  }, [feedSort]);
+  }, [feedSort, accountPosts]);
 
   const profilePhotos = useMemo(() => [postPhoto1, postPhoto2, postPhoto3, postPhoto4, photo1, post1], []);
 
@@ -288,8 +299,8 @@ const Profile = () => {
             <DropdownMenu open={avatarMenuOpen} onOpenChange={setAvatarMenuOpen}>
               <DropdownMenuTrigger asChild>
                 <button className="relative block rounded-full outline-none">
-                  <div className="h-40 w-40 overflow-hidden rounded-full border-4 border-background bg-muted ring-4 ring-background">
-                    {avatar ? <img src={avatar} alt="Mark Roberts" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center bg-muted"><div className="h-20 w-20 rounded-full bg-foreground/75 opacity-80 [clip-path:polygon(50%_0,62%_26%,88%_36%,66%_54%,68%_84%,50%_68%,32%_84%,34%_54%,12%_36%,38%_26%)]" /></div>}
+                  <div className="h-40 w-40 overflow-hidden rounded-full border-4 border-background ring-4 ring-background" style={{ background: avatar ? undefined : activeAccount.avatarColor }}>
+                    {avatar ? <img src={avatar} alt={activeAccount.name} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-white text-4xl font-semibold">{getInitials(activeAccount.name)}</div>}
                   </div>
                   <span className="absolute bottom-3 right-2 flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-primary text-primary-foreground"><Plus className="h-4 w-4" strokeWidth={3} /></span>
                 </button>
@@ -306,7 +317,8 @@ const Profile = () => {
           </div>
 
           <div className="ml-[172px] min-w-0 flex-1">
-            <h1 className="text-2xl font-bold">Mark Roberts</h1>
+            <h1 className="text-2xl font-bold">{activeAccount.name}</h1>
+            <div className="text-xs text-muted-foreground">{activeAccount.username}</div>
             <button className="mt-1 flex items-center gap-1 text-sm text-primary hover:underline">Укажите информацию о себе <ChevronRight className="h-4 w-4" /></button>
           </div>
           <div className="flex items-center gap-2">
