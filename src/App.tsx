@@ -80,6 +80,7 @@ const App = () => (
       </BrowserRouter>
       </NotificationsProvider>
       </MessengerProvider>
+      </AccountsProvider>
       </RepostsProvider>
       </StoriesProvider>
       </PlayerProvider>
