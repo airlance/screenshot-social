@@ -33,7 +33,8 @@ const POPUP_ITEMS = [
 export const TopBar = () => {
   const { isRead, markRead, markUnread } = useNotifications();
   const { accounts, activeId, activeAccount, switchAccount, removeAccount } = useAccounts();
-  const unreadCount = POPUP_ITEMS.filter((i) => !isRead(i.id)).length;
+  const popupItems = POPUP_ITEMS.map((i) => ({ ...i, id: `${activeAccount.id}:${i.id}` }));
+  const unreadCount = popupItems.filter((i) => !isRead(i.id)).length;
   return (
     <header className="sticky top-0 z-40 h-[60px] bg-background/85 backdrop-blur-xl border-b border-border">
       <div className="max-w-[1280px] mx-auto h-full px-4 flex items-center gap-4">
