@@ -74,7 +74,7 @@ export const TopBar = () => {
               <div className="text-sm font-semibold">Уведомления</div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => POPUP_ITEMS.forEach((i) => !isRead(i.id) && markRead(i.id))}
+                  onClick={() => popupItems.forEach((i) => !isRead(i.id) && markRead(i.id))}
                   disabled={unreadCount === 0}
                   className="rounded-md px-2 py-1 text-xs font-medium text-primary hover:bg-secondary disabled:opacity-50"
                 >
@@ -86,7 +86,7 @@ export const TopBar = () => {
               </div>
             </div>
             <div className="px-2 pb-2">
-              {POPUP_ITEMS.map((item) => {
+              {popupItems.map((item) => {
                 const read = isRead(item.id);
                 return (
                   <div
