@@ -317,7 +317,8 @@ const Profile = () => {
           </div>
 
           <div className="ml-[172px] min-w-0 flex-1">
-            <h1 className="text-2xl font-bold">Mark Roberts</h1>
+            <h1 className="text-2xl font-bold">{activeAccount.name}</h1>
+            <div className="text-xs text-muted-foreground">{activeAccount.username}</div>
             <button className="mt-1 flex items-center gap-1 text-sm text-primary hover:underline">Укажите информацию о себе <ChevronRight className="h-4 w-4" /></button>
           </div>
           <div className="flex items-center gap-2">
