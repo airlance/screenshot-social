@@ -1,9 +1,10 @@
-import { Search, Bell, ChevronDown, HelpCircle, LogOut, Plus, QrCode, Settings, Wallet, Palette, UserRound, AlertCircle, MoreHorizontal, Check, CheckCheck } from "lucide-react";
+import { Search, Bell, ChevronDown, HelpCircle, LogOut, Plus, QrCode, Settings, Wallet, Palette, AlertCircle, MoreHorizontal, Check, CheckCheck, Trash2, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PlayerPopover } from "@/components/player/PlayerPopover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useNotifications } from "@/context/NotificationsContext";
+import { useAccounts, getInitials } from "@/context/AccountsContext";
 import { cn } from "@/lib/utils";
 
 const POPUP_ITEMS = [
