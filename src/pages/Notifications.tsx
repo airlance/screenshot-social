@@ -1,9 +1,10 @@
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Link } from "react-router-dom";
 import { AlertCircle, UserPlus, Heart, MessageSquare, Share2, Gift, AtSign, Users as UsersIcon, MoreHorizontal, Check, CheckCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNotifications } from "@/context/NotificationsContext";
+import { useAccounts, getInitials } from "@/context/AccountsContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
