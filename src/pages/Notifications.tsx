@@ -209,8 +209,49 @@ const ITEMS: Record<SectionKey, Item[]> = {
 const Notifications = () => {
   const [section, setSection] = useState<SectionKey>("profile");
   const current = SECTIONS.find((s) => s.key === section)!;
-  const items = ITEMS[section];
+  const { activeAccount } = useAccounts();
   const { isRead, toggleRead, markRead, markUnread } = useNotifications();
+
+  const accountItems = useMemo<Record<SectionKey, Item[]>>(() => {
+    const prefix = (key: string) => `${activeAccount.id}:${key}`;
+    const remap = (arr: Item[]) => arr.map((it) => ({ ...it, id: prefix(it.id) }));
+    const feedback = remap(FEEDBACK_ITEMS).map((it) =>
+      it.id.endsWith(":fb3")
+        ? {
+            ...it,
+            title: (
+              <>
+                <span className="font-semibold">{activeAccount.name}</span> поделился вашей записью
+              </>
+            ),
+          }
+        : it,
+    );
+    const account = remap(ACCOUNT_ITEMS).map((it) =>
+      it.id.endsWith(":a1")
+        ? {
+            ...it,
+            title: (
+              <>
+                Был выполнен вход в аккаунт{" "}
+                <span className="font-semibold">{activeAccount.username}</span> с нового устройства — Chrome, macOS
+              </>
+            ),
+          }
+        : it,
+    );
+    return {
+      profile: remap(PROFILE_ITEMS),
+      groups: remap(GROUPS_ITEMS),
+      feedback,
+      friends: remap(FRIENDS_ITEMS),
+      services: remap(SERVICES_ITEMS),
+      communication: remap(COMMUNICATION_ITEMS),
+      account,
+    };
+  }, [activeAccount]);
+
+  const items = accountItems[section];
   const unreadIds = items.filter((it) => !isRead(it.id)).map((it) => it.id);
 
   return (
@@ -219,7 +260,7 @@ const Notifications = () => {
       right={
         <div className="vk-card p-2">
           {SECTIONS.map((s) => {
-            const sectionItems = ITEMS[s.key];
+            const sectionItems = accountItems[s.key];
             const unread = sectionItems.filter((it) => !isRead(it.id)).length;
             return (
               <button
@@ -246,7 +287,20 @@ const Notifications = () => {
     >
       <section className="vk-card overflow-hidden rounded-xl">
         <header className="flex items-center justify-between px-5 py-4">
-          <h1 className="text-lg font-semibold">Уведомления</h1>
+          <div className="flex items-center gap-3 min-w-0">
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white text-xs font-semibold"
+              style={{ background: activeAccount.avatarColor }}
+            >
+              {getInitials(activeAccount.name)}
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-lg font-semibold leading-tight truncate">Уведомления</h1>
+              <div className="text-xs text-muted-foreground truncate">
+                {activeAccount.name} · {activeAccount.username}
+              </div>
+            </div>
+          </div>
           <div className="flex items-center gap-3">
             <button
               onClick={() => unreadIds.forEach((id) => markRead(id))}
@@ -267,6 +321,7 @@ const Notifications = () => {
         <div className="px-5 pb-2 text-[11px] font-bold tracking-wider text-muted-foreground">
           {current.label.toUpperCase()}
         </div>
+
 
         <ul className="px-2 pb-3">
           {items.map((it) => {
