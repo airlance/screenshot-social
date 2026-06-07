@@ -1,11 +1,17 @@
-import { Search, Bell, ChevronDown, HelpCircle, LogOut, Plus, QrCode, Settings, Wallet, Palette, AlertCircle, MoreHorizontal, Check, CheckCheck, Trash2, CheckCircle2, Users } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Search, Bell, ChevronDown, HelpCircle, LogOut, Plus, QrCode, Settings, Wallet, Palette, AlertCircle, MoreHorizontal, Check, CheckCheck, Trash2, CheckCircle2, Users, User as UserIcon, UsersRound, Newspaper, Music, Video } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { PlayerPopover } from "@/components/player/PlayerPopover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useNotifications } from "@/context/NotificationsContext";
 import { useAccounts, getInitials } from "@/context/AccountsContext";
+import { SEARCH_INDEX, SearchEntry } from "@/lib/searchIndex";
 import { cn } from "@/lib/utils";
+
+const TYPE_ICONS: Record<SearchEntry["type"], any> = {
+  people: UserIcon, group: UsersRound, post: Newspaper, music: Music, video: Video,
+};
 
 const POPUP_ITEMS = [
   {
@@ -33,8 +39,36 @@ const POPUP_ITEMS = [
 export const TopBar = () => {
   const { isRead, markRead, markUnread } = useNotifications();
   const { accounts, activeId, activeAccount, switchAccount, removeAccount } = useAccounts();
+  const navigate = useNavigate();
+  const [query, setQuery] = useState("");
+  const [openSearch, setOpenSearch] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
   const popupItems = POPUP_ITEMS.map((i) => ({ ...i, id: `${activeAccount.id}:${i.id}` }));
   const unreadCount = popupItems.filter((i) => !isRead(i.id)).length;
+
+  const suggestions = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (q.length < 2) return [];
+    return SEARCH_INDEX
+      .filter((e) => e.title.toLowerCase().includes(q) || e.subtitle?.toLowerCase().includes(q))
+      .slice(0, 8);
+  }, [query]);
+
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setOpenSearch(false);
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
+
+  const submitSearch = (q: string) => {
+    const value = q.trim();
+    if (!value) return;
+    setOpenSearch(false);
+    navigate(`/search?q=${encodeURIComponent(value)}`);
+  };
+
   return (
     <header className="sticky top-0 z-40 h-[60px] bg-background/85 backdrop-blur-xl border-b border-border">
       <div className="max-w-[1280px] mx-auto h-full px-4 flex items-center gap-4">
@@ -45,13 +79,51 @@ export const TopBar = () => {
           <span className="font-semibold text-[15px] tracking-tight">ВКонтакте</span>
         </Link>
 
-        <div className="flex-1 max-w-[420px] relative">
+        <div ref={searchRef} className="flex-1 max-w-[420px] relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
             placeholder="Поиск"
+            value={query}
+            onChange={(e) => { setQuery(e.target.value); setOpenSearch(true); }}
+            onFocus={() => setOpenSearch(true)}
+            onKeyDown={(e) => { if (e.key === "Enter") submitSearch(query); }}
             className="w-full h-10 pl-9 pr-3 rounded-full bg-secondary text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
           />
+          {openSearch && query.trim().length >= 2 && (
+            <div className="absolute left-0 right-0 top-12 z-50 rounded-xl border border-border bg-popover shadow-elevated overflow-hidden">
+              {suggestions.length === 0 ? (
+                <div className="px-4 py-6 text-center text-sm text-muted-foreground">Ничего не найдено</div>
+              ) : (
+                <div className="py-1 max-h-[360px] overflow-y-auto">
+                  {suggestions.map((s) => {
+                    const Icon = TYPE_ICONS[s.type];
+                    return (
+                      <button
+                        key={s.id}
+                        onClick={() => submitSearch(s.title)}
+                        className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-secondary/60"
+                      >
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary shrink-0">
+                          <Icon className="h-4 w-4 text-foreground/70" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-sm">{s.title}</div>
+                          {s.subtitle && <div className="truncate text-xs text-muted-foreground">{s.subtitle}</div>}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              <button
+                onClick={() => submitSearch(query)}
+                className="block w-full border-t border-border py-2.5 text-center text-sm font-medium text-primary hover:bg-secondary/50"
+              >
+                Показать все результаты
+              </button>
+            </div>
+          )}
         </div>
 
         <Popover>
