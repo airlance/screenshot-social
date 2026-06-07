@@ -1,4 +1,4 @@
-import { Search, Bell, ChevronDown, HelpCircle, LogOut, Plus, QrCode, Settings, Wallet, Palette, AlertCircle, MoreHorizontal, Check, CheckCheck, Trash2, CheckCircle2 } from "lucide-react";
+import { Search, Bell, ChevronDown, HelpCircle, LogOut, Plus, QrCode, Settings, Wallet, Palette, AlertCircle, MoreHorizontal, Check, CheckCheck, Trash2, CheckCircle2, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PlayerPopover } from "@/components/player/PlayerPopover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -231,6 +231,7 @@ export const TopBar = () => {
               <div className="mt-2 text-xs font-semibold leading-snug">Входите во все сервисы Mail в один клик</div>
             </div>
             <div className="px-2 pb-2">
+              <DropdownMenuItem asChild className="gap-3 py-2.5"><Link to="/accounts"><Users className="w-4 h-4 text-primary" />Мои аккаунты</Link></DropdownMenuItem>
               <DropdownMenuItem className="gap-3 py-2.5"><Wallet className="w-4 h-4 text-primary" />Голоса <span className="ml-auto text-muted-foreground">0</span></DropdownMenuItem>
               <DropdownMenuItem className="gap-3 py-2.5"><QrCode className="w-4 h-4 text-primary" />Вход по QR-коду</DropdownMenuItem>
               <DropdownMenuItem asChild className="gap-3 py-2.5"><Link to="/settings"><Settings className="w-4 h-4 text-primary" />Настройки</Link></DropdownMenuItem>
