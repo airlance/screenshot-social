@@ -185,6 +185,9 @@ const AccountSection = () => {
       <Row label="Тема">
         <button className="text-primary hover:underline">Системная</button>
       </Row>
+      <Row label="Аккаунты">
+        <Link to="/accounts" className="text-primary hover:underline">Управление аккаунтами</Link>
+      </Row>
 
       <Row label="Настройки профиля">
         <div className="flex flex-col gap-3">
