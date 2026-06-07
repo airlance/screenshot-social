@@ -25,7 +25,7 @@ import SimplePage from "./pages/SimplePage.tsx";
 import Services from "./pages/Services.tsx";
 import Settings from "./pages/Settings.tsx";
 import Notifications from "./pages/Notifications.tsx";
-import Login from "./pages/Login.tsx";
+import Accounts from "./pages/Accounts.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { PlayerProvider } from "./context/PlayerContext";
 import { StoriesProvider } from "./context/StoriesContext";
@@ -69,6 +69,7 @@ const App = () => (
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/services" element={<Services />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/accounts" element={<Accounts />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/voices" element={<SimplePage title="Голоса" />} />
           <Route path="/bookmarks" element={<Bookmarks />} />
