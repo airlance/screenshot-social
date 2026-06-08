@@ -1,8 +1,10 @@
-import { useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { Search as SearchIcon, User, UsersRound, Newspaper, Music, Video } from "lucide-react";
+import { Search as SearchIcon, User, UsersRound, Newspaper, Music, Video, RefreshCw } from "lucide-react";
 import { SEARCH_INDEX, SearchEntry } from "@/lib/searchIndex";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ErrorState } from "@/components/common/StateView";
 
 const ICONS: Record<SearchEntry["type"], any> = {
   people: User,
