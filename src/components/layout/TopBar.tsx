@@ -42,16 +42,37 @@ export const TopBar = () => {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [openSearch, setOpenSearch] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<SearchEntry[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
   const popupItems = POPUP_ITEMS.map((i) => ({ ...i, id: `${activeAccount.id}:${i.id}` }));
   const unreadCount = popupItems.filter((i) => !isRead(i.id)).length;
 
-  const suggestions = useMemo(() => {
+  useEffect(() => {
     const q = query.trim().toLowerCase();
-    if (q.length < 2) return [];
-    return SEARCH_INDEX
-      .filter((e) => e.title.toLowerCase().includes(q) || e.subtitle?.toLowerCase().includes(q))
-      .slice(0, 8);
+    if (q.length < 2) {
+      setSuggestions([]);
+      setSearchLoading(false);
+      setSearchError(null);
+      return;
+    }
+    setSearchLoading(true);
+    setSearchError(null);
+    const timer = setTimeout(() => {
+      if (Math.random() < 0.05) {
+        setSearchError("Не удалось загрузить результаты. Попробуйте ещё раз.");
+        setSuggestions([]);
+      } else {
+        setSuggestions(
+          SEARCH_INDEX
+            .filter((e) => e.title.toLowerCase().includes(q) || e.subtitle?.toLowerCase().includes(q))
+            .slice(0, 8)
+        );
+      }
+      setSearchLoading(false);
+    }, 500);
+    return () => clearTimeout(timer);
   }, [query]);
 
   useEffect(() => {
