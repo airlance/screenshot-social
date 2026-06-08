@@ -42,16 +42,37 @@ export const TopBar = () => {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [openSearch, setOpenSearch] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<SearchEntry[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
   const popupItems = POPUP_ITEMS.map((i) => ({ ...i, id: `${activeAccount.id}:${i.id}` }));
   const unreadCount = popupItems.filter((i) => !isRead(i.id)).length;
 
-  const suggestions = useMemo(() => {
+  useEffect(() => {
     const q = query.trim().toLowerCase();
-    if (q.length < 2) return [];
-    return SEARCH_INDEX
-      .filter((e) => e.title.toLowerCase().includes(q) || e.subtitle?.toLowerCase().includes(q))
-      .slice(0, 8);
+    if (q.length < 2) {
+      setSuggestions([]);
+      setSearchLoading(false);
+      setSearchError(null);
+      return;
+    }
+    setSearchLoading(true);
+    setSearchError(null);
+    const timer = setTimeout(() => {
+      if (Math.random() < 0.05) {
+        setSearchError("Не удалось загрузить результаты. Попробуйте ещё раз.");
+        setSuggestions([]);
+      } else {
+        setSuggestions(
+          SEARCH_INDEX
+            .filter((e) => e.title.toLowerCase().includes(q) || e.subtitle?.toLowerCase().includes(q))
+            .slice(0, 8)
+        );
+      }
+      setSearchLoading(false);
+    }, 500);
+    return () => clearTimeout(timer);
   }, [query]);
 
   useEffect(() => {
@@ -92,9 +113,49 @@ export const TopBar = () => {
           />
           {openSearch && query.trim().length >= 2 && (
             <div className="absolute left-0 right-0 top-12 z-50 rounded-xl border border-border bg-popover shadow-elevated overflow-hidden">
-              {suggestions.length === 0 ? (
+              {searchLoading && (
+                <div className="py-3 px-3 space-y-2">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-full bg-muted animate-pulse shrink-0" />
+                      <div className="min-w-0 flex-1 space-y-1.5">
+                        <div className="h-3.5 w-1/2 rounded bg-muted animate-pulse" />
+                        <div className="h-3 w-1/3 rounded bg-muted animate-pulse" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {!searchLoading && searchError && (
+                <div className="px-4 py-6 text-center">
+                  <p className="text-sm text-destructive mb-2">{searchError}</p>
+                  <button
+                    onClick={() => {
+                      setSearchError(null);
+                      setSearchLoading(true);
+                      setTimeout(() => {
+                        const q = query.trim().toLowerCase();
+                        setSuggestions(
+                          SEARCH_INDEX
+                            .filter((e) => e.title.toLowerCase().includes(q) || e.subtitle?.toLowerCase().includes(q))
+                            .slice(0, 8)
+                        );
+                        setSearchLoading(false);
+                      }, 500);
+                    }}
+                    className="text-sm font-medium text-primary hover:underline"
+                  >
+                    Повторить
+                  </button>
+                </div>
+              )}
+
+              {!searchLoading && !searchError && suggestions.length === 0 && (
                 <div className="px-4 py-6 text-center text-sm text-muted-foreground">Ничего не найдено</div>
-              ) : (
+              )}
+
+              {!searchLoading && !searchError && suggestions.length > 0 && (
                 <div className="py-1 max-h-[360px] overflow-y-auto">
                   {suggestions.map((s) => {
                     const Icon = TYPE_ICONS[s.type];
