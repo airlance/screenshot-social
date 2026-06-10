@@ -26,6 +26,8 @@ import Services from "./pages/Services.tsx";
 import Settings from "./pages/Settings.tsx";
 import Notifications from "./pages/Notifications.tsx";
 import Login from "./pages/Login.tsx";
+import QRLogin from "./pages/QRLogin.tsx";
+import Register from "./pages/Register.tsx";
 import Accounts from "./pages/Accounts.tsx";
 import Search from "./pages/Search.tsx";
 import NotFound from "./pages/NotFound.tsx";
@@ -54,6 +56,8 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/qr-login" element={<QRLogin />} />
 
           <Route path="/feed" element={<Feed />} />
           <Route path="/messenger" element={<Messenger />} />

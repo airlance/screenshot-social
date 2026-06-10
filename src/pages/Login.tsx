@@ -101,15 +101,15 @@ const Login = () => {
             <span className="h-px flex-1 bg-border" />
           </div>
 
-          <button
-            type="button"
-            className="w-full inline-flex items-center justify-center gap-2 h-11 rounded-lg bg-secondary text-sm font-medium hover:bg-accent"
+          <Link
+              to="/qr-login"
+              className="w-full inline-flex items-center justify-center gap-2 h-11 rounded-lg bg-secondary text-sm font-medium hover:bg-accent"
           >
             <QrCode className="w-4 h-4" /> Войти по QR-коду
-          </button>
+          </Link>
 
           <p className="mt-6 text-center text-xs text-muted-foreground">
-            Нет аккаунта? <span className="text-primary cursor-pointer">Зарегистрироваться</span>
+            Нет аккаунта? <span className="text-primary cursor-pointer"><Link to="/register">Зарегистрироваться</Link></span>
           </p>
         </div>
       </div>
