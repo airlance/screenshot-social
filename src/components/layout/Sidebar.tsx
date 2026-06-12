@@ -2,9 +2,8 @@ import { NavLink } from "react-router-dom";
 import {
   User, Newspaper, MessageCircle, Phone, Users, UsersRound,
   Image as ImageIcon, Music, Video, Film, Gamepad2, Smile, ShoppingBag,
-  LayoutGrid, Mic, Bookmark, Megaphone, HelpCircle,
+  LayoutGrid, Mic, Bookmark, HelpCircle,
 } from "lucide-react";
-import adSide from "@/assets/ad-side.jpg";
 
 const main = [
   { to: "/", label: "Профиль", icon: User },
@@ -29,7 +28,6 @@ const services = [
 
 const bottom = [
   { to: "/bookmarks", label: "Закладки", icon: Bookmark },
-  { to: "/ads", label: "Реклама", icon: Megaphone },
   { to: "/help", label: "Помощь", icon: HelpCircle },
 ];
 
@@ -57,22 +55,6 @@ export const Sidebar = () => {
       <nav className="flex flex-col gap-0.5">
         {bottom.map((i) => <Item key={i.to} {...i} />)}
       </nav>
-
-      <div className="mt-4 vk-card overflow-hidden">
-        <div className="relative">
-          <img src={adSide} alt="Реклама" loading="lazy" className="w-full h-32 object-cover" />
-          <span className="absolute top-2 left-2 text-[10px] font-bold tracking-wide bg-background/70 backdrop-blur px-1.5 py-0.5 rounded text-foreground/80">
-            РЕКЛАМА 0+
-          </span>
-          <button className="absolute top-2 right-2 w-6 h-6 rounded-full bg-background/70 text-foreground/80 text-xs">···</button>
-        </div>
-        <div className="p-3">
-          <p className="text-sm font-semibold mb-1">Мир знаний и культуры</p>
-          <p className="text-xs text-muted-foreground leading-snug">
-            Бесплатный вдохновляющий урок с Алексеем Лебедевым. Красный диплом МГУ, многолетний опыт.
-          </p>
-        </div>
-      </div>
 
       <div className="mt-4 px-3 pb-4 flex gap-3 text-[11px] text-muted-foreground">
         <a href="#" className="hover:text-foreground">Блог</a>

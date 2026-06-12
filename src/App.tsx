@@ -3,7 +3,6 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import Index from "./pages/Index.tsx";
 import Feed from "./pages/Feed.tsx";
 import Profile from "./pages/Profile.tsx";
 import UserProfile from "./pages/UserProfile.tsx";
@@ -54,7 +53,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<Profile />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/qr-login" element={<QRLogin />} />
@@ -81,7 +80,6 @@ const App = () => (
           <Route path="/voices" element={<SimplePage title="Голоса" />} />
           <Route path="/bookmarks" element={<Bookmarks />} />
           <Route path="/article/new" element={<ArticleEditor />} />
-          <Route path="/ads" element={<SimplePage title="Реклама" />} />
           <Route path="/help" element={<SimplePage title="Помощь" />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
